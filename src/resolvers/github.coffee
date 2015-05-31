@@ -8,7 +8,7 @@
 
 GitHubApi = require 'github'
 
-GH_TOKEN = '63954da724a5e8084113476b02cd7fa86cc704df'
+GH_TOKEN = process.env.GH_TOKEN
 
 class exports.GitHub
   constructor: (expression) ->
@@ -16,7 +16,7 @@ class exports.GitHub
 
     @user = match[1]
     @repo_re = new RegExp match[2]
-    @branch_re = if match[3] then new RegExp match[3].substring 1 else null
+    @branch_re = if match[3] then new RegExp match[3].substring 1 else /.*/
     @path = if match[4] then new RegExp match[4].substring 1 else null
 
     @repos = []
@@ -27,9 +27,10 @@ class exports.GitHub
 
     # TODO: authenticate using username & password too
 
-    @api.authenticate
-      type: "oauth",
-      token: GH_TOKEN
+    if GH_TOKEN
+      @api.authenticate
+        type: "oauth",
+        token: GH_TOKEN
 
   parseExpression: (expression) ->
     pattern = ///

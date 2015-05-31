@@ -4,7 +4,7 @@ should = require('chai').should()
 expect = require('chai').expect
 
 
-describe 'github.test', ->
+describe 'resolvers.github.test', ->
   it 'should match expression', ->
     expect github.test 'github:pazdera/.*'
       .to.be.equal true
@@ -14,7 +14,7 @@ describe 'github.test', ->
       .to.not.be.equal true
 
 
-describe 'github.Github', ->
+describe 'resolvers.github.Github', ->
   describe '.resolve', ->
     it 'existing account should resolve fine', (done) ->
       gh = new github.GitHub 'github:pazdera/.*'

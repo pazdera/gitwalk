@@ -23,8 +23,11 @@ gulp.task('coffee', function() {
 });
 
 gulp.task('test', function() {
-    gulp.src(testDir + '*.coffee', {read: false})
-        .pipe(mocha({reporter: 'nyan'}));
+    sources = testDir + '*.coffee';
+    sources = testDir + 'engine.coffee';
+
+    gulp.src(sources, {read: false})
+        .pipe(mocha({reporter: 'nyan', timeout: 30000}));
 });
 
 gulp.task('default', ['lint', 'coffee'], function() {
