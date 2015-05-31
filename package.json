@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "async": "^1.0.0",
+    "chalk": "^1.0.0",
     "github": "^0.2.4",
     "nodegit": "^0.4.0",
     "tilde-expansion": "0.0.0"

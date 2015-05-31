@@ -5,8 +5,10 @@ path = require 'path'
 crypto = require 'crypto'
 tilde = require 'tilde-expansion'
 nodegit = require 'nodegit'
-getBackend = require './backend'
 async = require 'async'
+
+logger = require './logger'
+getBackend = require './backend'
 
 cb = (repo_handle) ->
   # Read files in the repository
@@ -138,31 +140,31 @@ class exports.Engine
 
             count--
             if count <= 0
-              console.log "Checkouts started #{branches}"
-              async.eachSeries branches, ((branchRef, done) =>
-                console.log "Checking out #{branchRef.shorthand()}"
-                nodegit.Checkout.tree repoHandle, branchRef.name(), checkoutStrategy: nodegit.Checkout.STRATEGY.FORCE
-                  .then =>
-                    console.log "checkout complete"
-                    callback repoHandle.path()
-                    done null
-                  .catch (err) =>
-                    console.log "qq",err
-                    throw err
-              ),
-              ((err) =>
-                if err
-                  console.log "ww",err
-                  throw err
-              )
-              # for each branch
-              #   checkout
-              #   callback with the path
+              @checkoutBranches branches, repoHandle, callback
           .catch (err) =>
             console.log "yy", err
             throw err
           .done =>
             console.log 'processBranches done!'
+
+  checkoutBranches: (branches, repoHandle, callback) =>
+    logger.info 'Starting to process repositories'
+    async.eachSeries branches, ((branchRef, done) =>
+      console.log "Checking out #{branchRef.shorthand()}"
+      nodegit.Checkout.tree repoHandle, branchRef.name(), checkoutStrategy: nodegit.Checkout.STRATEGY.FORCE
+        .then =>
+          console.log "checkout complete"
+          callback repoHandle.path()
+          done null
+        .catch (err) =>
+          console.log "qq",err
+          throw err
+    ),
+    ((err) =>
+      if err
+        console.log "ww",err
+        throw err
+    )
 
   # TODO Move this to a separate Cache class
   getCacheDir: (repoName, repoUrl, callback) ->
