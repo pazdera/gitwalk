@@ -9,6 +9,7 @@ async = require 'async'
 
 logger = require './logger'
 getBackend = require './backend'
+proc = require './proc'
 
 cb = (repo_handle) ->
   # Read files in the repository
@@ -37,9 +38,10 @@ class exports.Engine
       throw err if err
 
       for query in queries
-        console.log query
-        url = query.urls.shift()
-        @tryUrl url, query.urls, query, callback
+        do (query) =>
+          console.log query
+          url = query.urls.shift()
+          @tryUrl url, query.urls, query, callback
 
   tryUrl: (url, altUrls, query, callback) ->
     console.log url
@@ -140,22 +142,22 @@ class exports.Engine
 
             count--
             if count <= 0
-              @checkoutBranches branches, repoHandle, callback
+              @checkoutBranches branches, repoHandle, query, callback
           .catch (err) =>
             console.log "yy", err
             throw err
           .done =>
             console.log 'processBranches done!'
 
-  checkoutBranches: (branches, repoHandle, callback) =>
+  checkoutBranches: (branches, repoHandle, query, callback) =>
     logger.info 'Starting to process repositories'
     async.eachSeries branches, ((branchRef, done) =>
       console.log "Checking out #{branchRef.shorthand()}"
       nodegit.Checkout.tree repoHandle, branchRef.name(), checkoutStrategy: nodegit.Checkout.STRATEGY.FORCE
         .then =>
           console.log "checkout complete"
-          callback repoHandle.path()
-          done null
+          @resolveEmbeddedProcessor repoHandle, query, done, callback
+          console.log "after resolve"
         .catch (err) =>
           console.log "qq",err
           throw err
@@ -165,6 +167,19 @@ class exports.Engine
         console.log "ww",err
         throw err
     )
+
+  resolveEmbeddedProcessor: (repoHandle, query, finished, callback) ->
+    processor = proc.getProcessor query
+    if processor
+      args = query.proc.args.slice()
+      args.unshift finished
+      args.unshift repoHandle
+      args.push callback
+
+      processor.apply @, args
+    else
+      callback repoHandle, finished
+
 
   # TODO Move this to a separate Cache class
   getCacheDir: (repoName, repoUrl, callback) ->
