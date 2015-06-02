@@ -16,7 +16,7 @@ class exports.GitHub
 
     @user = match[1]
     @repo_re = new RegExp match[2]
-    @branch_re = if match[3] then new RegExp match[3].substring 1 else /master/
+    @branchRe = if match[3] then new RegExp match[3].substring 1 else /master/
     @path = if match[4] then new RegExp match[4].substring 1 else null
 
     @repos = []
@@ -124,7 +124,7 @@ class exports.GitHub
         query =
           name: repo.name,
           urls: [repo.ssh_url, repo.clone_url, repo.git_url],
-          branch_re: @branch_re,
+          branchRe: @branchRe,
 
         if @path
           query.proc =

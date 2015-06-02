@@ -1,4 +1,5 @@
-# Processor mappings
+# Processor mappings for purposes of matching the ones
+# embedded in resolver expressions
 
 file = require './processors/file'
 

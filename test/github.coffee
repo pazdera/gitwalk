@@ -53,14 +53,14 @@ describe 'resolvers.github.Github', ->
       gh = new github.GitHub 'github:pazdera/tco@master'
       gh.resolve (err, data) ->
         expect(err).to.be.null
-        expect(data[0].branch_re.source).to.be.equal 'master'
+        expect(data[0].branchRe.source).to.be.equal 'master'
         done()
 
     it 'parses re branch correctly', (done) ->
       gh = new github.GitHub 'github:pazdera/tco@.+'
       gh.resolve (err, data) ->
         expect(err).to.be.null
-        expect(data[0].branch_re.source).to.be.equal '.+'
+        expect(data[0].branchRe.source).to.be.equal '.+'
         done()
 
     it 'parses the file processor correctly', (done) ->
