@@ -21,13 +21,14 @@ class exports.Engine
     @backend.resolve (err, queries) =>
       throw err if err?
 
+      # TODO: This might need an async series loop
       for query in queries
         do (query) =>
           git.prepareRepo query.name, query.urls, (err, repo) =>
             throw err if err?
             @updateRepo repo, query, (err, branches) =>
               throw err if err?
-              @checkoutBranches branches, repo, query, callback
+              @processBranches branches, repo, query, callback
 
   updateRepo: (repo, query, callback) ->
     git.getUpToDateRefs repo, (err, reflist) =>
@@ -60,18 +61,12 @@ class exports.Engine
 
     return [head, remoteRefs]
 
-  checkoutBranches: (branches, repo, query, callback) =>
+  processBranches: (branches, repo, query, callback) =>
     logger.info 'Starting to process repositories'
     async.eachSeries branches, ((branchRef, done) =>
-      console.log "Checking out #{branchRef.shorthand()}"
-      nodegit.Checkout.tree repo, branchRef.name(), checkoutStrategy: nodegit.Checkout.STRATEGY.FORCE
-        .then =>
-          console.log "checkout complete"
-          @callProcessor repo, query, done, callback
-          console.log "after resolve"
-        .catch (err) =>
-          console.log "qq",err
-          throw err
+      git.forceCheckoutBranch repo, branchRef, (err) =>
+        throw err if err?
+        @callProcessor repo, query, done, callback
     ),
     ((err) =>
       throw err if err?

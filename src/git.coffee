@@ -142,8 +142,22 @@ forceUpdateLocalBranches = (repo, head, remoteRefs, callback) ->
 
     return if abort
 
+forceCheckoutBranch = (repo, branchRef, callback) ->
+  console.log "Checking out #{branchRef.shorthand()}"
+  nodegit.Checkout.tree repo, branchRef.name(),
+                        checkoutStrategy: nodegit.Checkout.STRATEGY.FORCE
+    .then ->
+      console.log "checkout complete"
+      callback null
+      console.log "after resolve"
+    .catch (err) ->
+      console.log "qq",err
+      callback err
+    .done ->
+
 module.exports =
   nodegit_opts: opts
   getUpToDateRefs: getUpToDateRefs
   prepareRepo: prepareRepo
   forceUpdateLocalBranches: forceUpdateLocalBranches
+  forceCheckoutBranch: forceCheckoutBranch
