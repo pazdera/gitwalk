@@ -6,7 +6,6 @@ path = require 'path'
 cache = require './cache'
 utils = require './utils'
 
-
 opts =
   remoteCallbacks:
     # GitHub will fail cert check on some OSX machine.
@@ -19,6 +18,14 @@ opts =
       #       add plain-text auth
       #return nodegit.Cred.sshKeyFromAgent(userName)
       return (nodegit.Cred.sshKeyNew userName, '/Users/radek/.ssh/id_rsa.pub', '/Users/radek/.ssh/id_rsa', '')
+
+
+# Thrown by the engine when a clone fails
+#
+# This exception is caught and the engine retries with
+# an alternative URL if available.
+#
+class CloneError extends Error
 
 
 cloneRepo = (repoUrl, targetDir, callback) ->

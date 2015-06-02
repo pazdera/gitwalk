@@ -12,12 +12,6 @@ cache = require './cache'
 git = require './git'
 utils = require './utils'
 
-# Thrown by the engine when a clone fails
-#
-# This exception is caught and the engine retries with
-# an alternative URL if available.
-#
-class CloneError extends Error
 
 class exports.Engine
   constructor: (@expression) ->
@@ -31,12 +25,21 @@ class exports.Engine
         do (query) =>
           git.prepareRepo query.name, query.urls, (err, repo) =>
             throw err if err?
-            git.getUpToDateRefs repo, (err, reflist) =>
+            @updateRepo repo, query, (err, branches) =>
               throw err if err?
-              [head, remoteRefs] = @filterRefs reflist, query
-              git.forceUpdateLocalBranches repo, head, remoteRefs, (err, branches) =>
-                throw err if err?
-                @checkoutBranches branches, repo, query, callback
+              @checkoutBranches branches, repo, query, callback
+
+  updateRepo: (repo, query, callback) ->
+    git.getUpToDateRefs repo, (err, reflist) =>
+      if err?
+        calback err
+      else
+        [head, remoteRefs] = @filterRefs reflist, query
+        git.forceUpdateLocalBranches repo, head, remoteRefs, (err, branches) =>
+          if err?
+            callback err
+          else
+            callback null, branches
 
   filterRefs: (reflist, query) ->
     remoteRefs = []
