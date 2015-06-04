@@ -17,7 +17,8 @@ opts =
       # TODO: make this configurable
       #       add plain-text auth
       #return nodegit.Cred.sshKeyFromAgent(userName)
-      return (nodegit.Cred.sshKeyNew userName, '/Users/radek/.ssh/id_rsa.pub', '/Users/radek/.ssh/id_rsa', '')
+      return nodegit.Cred.sshKeyNew userName, '/Users/radek/.ssh/id_rsa.pub',
+                                    '/Users/radek/.ssh/id_rsa', ''
 
 
 # Thrown by the engine when a clone fails
@@ -75,24 +76,24 @@ getUpToDateRefs = (repo, callback) ->
 
 
 prepareRepo = (name, cloneUrls, callback) ->
-    url = cloneUrls.shift()
-    cache.getCacheDir name, url, (cacheDir) ->
-      try
-        getRepoHandle url, cacheDir, (err, repo) ->
-          if err?
-            callback err
-            return
+  url = cloneUrls.shift()
+  cache.getCacheDir name, url, (cacheDir) ->
+    try
+      getRepoHandle url, cacheDir, (err, repo) ->
+        if err?
+          callback err
+          return
 
-          callback null, repo
-      catch err
-        console.log "xx", err
-        if err instanceof CloneError
-          if cloneUrls.length == 0
-            calback "Unable to clone the repository"
-          else
-            prepareRepo cloneUrls, callback
+        callback null, repo
+    catch err
+      console.log "xx", err
+      if err instanceof CloneError
+        if cloneUrls.length == 0
+          calback "Unable to clone the repository"
         else
-          throw err
+          prepareRepo cloneUrls, callback
+      else
+        throw err
 
 forceUpdateLocalBranches = (repo, head, remoteRefs, callback) ->
   branches = []
@@ -114,7 +115,8 @@ forceUpdateLocalBranches = (repo, head, remoteRefs, callback) ->
 
       repo.getBranchCommit ref
         .then (commit) ->
-          return nodegit.Branch.create repo, localBranch, commit, 1, defSig, "#{localBranch}: created by gitwalk"
+          return nodegit.Branch.create repo, localBranch, commit, 1, defSig,
+                 "#{localBranch}: created by gitwalk"
         .then (branch) ->
           console.log "Created #{branch.shorthand()} (upstream #{ref})"
           console.log nodegit.Branch.setUpstream branch, ref.shorthand()

@@ -17,12 +17,12 @@ class exports.GitHub
     @user = match[1]
     @repo_re = new RegExp match[2]
     @branchRe = if match[3] then new RegExp match[3].substring 1 else /master/
-    @path = if match[4] then new RegExp match[4].substring 1 else null
+    @proc = if match[4] then new RegExp match[4].substring 1 else null
 
     @repos = []
 
     @api = new GitHubApi {
-        version: '3.0.0'
+      version: '3.0.0'
     }
 
     # TODO: authenticate using username & password too
@@ -38,7 +38,7 @@ class exports.GitHub
       ([a-zA-Z0-9\-]+)\/  # user
       ([^\/@]+)           # repository
       (@[^\/]+)?          # optional branch (defult branch assumed if not set)
-      (\/.+)?             # optional path processor
+      (\/.+|\$)?          # optional processor
     ///
 
     match = expression.match pattern
@@ -126,10 +126,19 @@ class exports.GitHub
           urls: [repo.ssh_url, repo.clone_url, repo.git_url],
           branchRe: @branchRe,
 
-        if @path
-          query.proc =
-            name: 'file',
-            args: [@path]
+        if @proc
+          switch @proc.substr(0)
+            when '$'
+              query.proc =
+                name: 'file',
+                args: [@proc]
+            when '/'
+              query.proc =
+                name: 'shell',
+                args: []
+            else
+              callback "Unknown processor syntax (#{@proc})"
+              return
 
         engineQueries.push query
 
@@ -145,4 +154,4 @@ class exports.GitHub
 # @return [Boolean] True when the expression matches.
 #
 exports.test = (expression) ->
-    /^github\:/.test expression
+  /^github\:/.test expression

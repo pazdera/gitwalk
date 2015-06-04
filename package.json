@@ -3,7 +3,11 @@
   "version": "0.0.1",
   "description": "Do things on groups of repositories.",
   "main": "lib/gitwalk.js",
+  "bin": {
+    "gitwalk": "bin/gitwalk"
+  },
   "scripts": {
+    "start": "node bin/gitwalk",
     "test": "gulp test"
   },
   "repository": {
@@ -25,16 +29,19 @@
   "devDependencies": {
     "chai": "^2.3.0",
     "coffee-script": "^1.9.2",
+    "event-stream": "^3.3.1",
     "gulp": "^3.8.11",
     "gulp-coffee": "^2.3.1",
     "gulp-coffeelint": "^0.5.0",
     "gulp-mocha": "^2.1.0",
+    "gulp-rename": "^1.2.2",
     "gulp-util": "^3.0.4",
     "mocha": "^2.2.5"
   },
   "dependencies": {
     "async": "^1.0.0",
     "chalk": "^1.0.0",
+    "commander": "^2.8.1",
     "github": "^0.2.4",
     "nconf": "^0.7.1",
     "nodegit": "^0.4.0",

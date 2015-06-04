@@ -1,5 +1,33 @@
 # Resolver of the repository selectors
 
+# library interface:
+#   gitwalk 'exp/.*', (file, done) ->
+#
+#   gitwalk 'exp$', "ls -l"
+#
+#   gitwalk 'exp#', (commit, author, message, done) ->
+#
+#   gitwalk 'exp', (repo, done) ->
+#
+#   gitwalk.configure (conf) ->
+#     conf.async = false
+#     conf.regex = false
+#
+
+# terminal ui:
+#   gitwalk 'exp/dir/.*', 'grep 'class List' #{file}'
+#
+#   gitwalk 'exp$', 'ls -l'
+#
+#   gitwalk 'exp#', 'echo #{commit} [#{author}] #{message}'
+#
+#   gitwalk 'exp', './do-something #{repo}'
+#
+#   gitwalk -r -a
+#
+#   gitwalk -V -h
+#
+
 fs = require 'fs'
 path = require 'path'
 nodegit = require 'nodegit'
@@ -36,7 +64,7 @@ class exports.Engine
         calback err
       else
         [head, remoteRefs] = @filterRefs reflist, query
-        git.forceUpdateLocalBranches repo, head, remoteRefs, (err, branches) =>
+        git.forceUpdateLocalBranches repo, head, remoteRefs, (err, branches) ->
           if err?
             callback err
           else
@@ -68,12 +96,13 @@ class exports.Engine
         throw err if err?
         @callProcessor repo, query, done, callback
     ),
-    ((err) =>
+    ((err) ->
       throw err if err?
     )
 
+  # TODO: all expressions must have matching processors
   callProcessor: (repo, query, finished, callback) ->
-    processor = proc.getProcessor query
+    processor = proc.getProcessorByName query.proc.name
     if processor
       args = query.proc.args.slice()
       args.unshift finished

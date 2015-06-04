@@ -14,9 +14,7 @@ module.exports = file = (repo, finished, pathRe, callback) ->
         relativePath = relativePath.substring 1
 
       if pathRe.test relativePath
-        callback filePath
-
-      done null
+        callback filePath, done
     ),
     ((err) ->
       finished null
