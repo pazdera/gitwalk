@@ -38,8 +38,8 @@ class exports.GitHub
       ^github\:
       ([a-zA-Z0-9\-_]+)\/ # user
       ([^\/@]+)           # repository
-      (@[^\/\$]+)?        # optional branch (defult branch assumed if not set)
-      (\/.+|\$)?          # optional processor
+      (@[^\/\$]+)?        # optional branch (master assumed if not set)
+      (\/.+|\$)?          # optional iterator
     ///
 
     match = expression.match pattern

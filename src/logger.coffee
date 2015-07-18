@@ -1,4 +1,5 @@
-# printing functions for the terminal
+# A simple logger to report messages to the user on different levels
+# and configurable verbosity.
 
 chalk = require 'chalk'
 config = require './config'

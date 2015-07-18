@@ -21,7 +21,6 @@ class exports.Basic
     firstPart = parts.join '@'
 
     match = secondPart.match /([^\/\$]+)((\/.*)|\$)$/
-    console.log match
     if !match
       throw 'Incorrect expression'
 

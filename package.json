@@ -42,12 +42,17 @@
     "async": "^1.0.0",
     "chalk": "^1.0.0",
     "commander": "^2.8.1",
+    "du": "^0.1.0",
     "expand-tilde": "^1.2.0",
+    "filesize": "^3.1.2",
+    "filesize-parser": "^1.2.0",
     "github": "^0.2.4",
     "glob": "^5.0.10",
     "minimatch": "^2.0.8",
+    "mkdirp": "^0.5.1",
     "nconf": "^0.7.1",
     "nodegit": "^0.4.1",
     "recursive-readdir": "^1.2.1",
+    "rimraf": "^2.4.1"
   }
 }

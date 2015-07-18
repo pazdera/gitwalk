@@ -42,21 +42,31 @@ utils = require './utils'
 
 
 class exports.Engine
-  constructor: (@expression) ->
+  constructor: (@expression, iterArgs...) ->
     @backend = getResolver @expression
+    @iterArgs = iterArgs
 
+  # TODO: Change throws for callbacks
   run: (callback) ->
     @backend.resolve (err, queries) =>
-      throw err if err?
+      return callback err if err?
 
-      # TODO: This might need an async series loop
-      for query in queries
-        do (query) =>
-          git.prepareRepo query.name, query.urls, (err, repo) =>
-            throw err if err?
-            @updateRepo repo, query, (err, branches) =>
-              throw err if err?
-              @processBranches branches, repo, query, callback
+      cache.initCache (err) =>
+        return callback err if err?
+
+        logger.info 'Starting to process repositories'
+        async.eachSeries queries,
+          ((query, done) =>
+            logger.info "Processing #{query.name}"
+            git.prepareRepo query.name, query.urls, (err, repo) =>
+              return callback err if err?
+              @updateRepo repo, query, (err, branches) =>
+                return callback err if err?
+                @processBranches branches, repo, query, @iterArgs, done
+          ),
+          ((err) ->
+            callback err
+          )
 
   updateRepo: (repo, query, callback) ->
     git.getUpToDateRefs repo, (err, reflist) =>
@@ -65,10 +75,7 @@ class exports.Engine
       else
         [head, remoteRefs] = @filterRefs reflist, query
         git.forceUpdateLocalBranches repo, head, remoteRefs, (err, branches) ->
-          if err?
-            callback err
-          else
-            callback null, branches
+            callback err, branches
 
   filterRefs: (reflist, query) ->
     remoteRefs = []
@@ -89,26 +96,25 @@ class exports.Engine
 
     return [head, remoteRefs]
 
-  processBranches: (branches, repo, query, callback) =>
-    logger.info 'Starting to process repositories'
+  processBranches: (branches, repo, query, iterArgs, callback) =>
     async.eachSeries branches, ((branchRef, done) =>
       git.forceCheckoutBranch repo, branchRef, (err) =>
-        throw err if err?
-        @callProcessor repo, query, done, callback
+         err if err?
+        @callProcessor repo, query, iterArgs, done
     ),
     ((err) ->
-      throw err if err?
+      callback err
     )
 
   # TODO: all expressions must have matching processors
-  callProcessor: (repo, query, finished, callback) ->
+  callProcessor: (repo, query, iterArgs, finished) ->
     processor = getProcessor query
     console.log query
     if processor
       args = query.proc.args.slice()
       args.unshift finished
       args.unshift repo
-      args.push callback
+      Array::push.apply args, iterArgs
       console.log args
 
       processor.apply @, args

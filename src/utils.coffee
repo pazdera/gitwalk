@@ -22,7 +22,6 @@ expandVars = (string, definitions) ->
 
 
 matchProc = (procStr) ->
-  console.log procStr
   switch procStr.substr 0, 1
     when '/'
       return \

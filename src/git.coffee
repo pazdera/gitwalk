@@ -3,6 +3,7 @@
 nodegit = require 'nodegit'
 path = require 'path'
 
+config = require './config'
 cache = require './cache'
 utils = require './utils'
 
@@ -17,8 +18,10 @@ opts =
       # TODO: make this configurable
       #       add plain-text auth
       #return nodegit.Cred.sshKeyFromAgent(userName)
-      return nodegit.Cred.sshKeyNew userName, '/Users/radek/.ssh/id_rsa.pub',
-                                    '/Users/radek/.ssh/id_rsa', ''
+      return nodegit.Cred.sshKeyNew(userName,
+                                    config.get('git:key:public'),
+                                    config.get('git:key:private'),
+                                    '')
 
 
 # Thrown by the engine when a clone fails
@@ -80,6 +83,7 @@ prepareRepo = (name, cloneUrls, callback) ->
   cache.getCacheDir name, url, (cacheDir) ->
     try
       getRepoHandle url, cacheDir, (err, repo) ->
+        console.log err, repo
         if err?
           callback err
           return
