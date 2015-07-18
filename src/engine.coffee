@@ -34,8 +34,8 @@ nodegit = require 'nodegit'
 async = require 'async'
 
 logger = require './logger'
-getBackend = require './backend'
-proc = require './proc'
+getResolver = require './resolvers'
+getProcessor = require './processors'
 cache = require './cache'
 git = require './git'
 utils = require './utils'
@@ -43,7 +43,7 @@ utils = require './utils'
 
 class exports.Engine
   constructor: (@expression) ->
-    @backend = getBackend @expression
+    @backend = getResolver @expression
 
   run: (callback) ->
     @backend.resolve (err, queries) =>
@@ -102,12 +102,14 @@ class exports.Engine
 
   # TODO: all expressions must have matching processors
   callProcessor: (repo, query, finished, callback) ->
-    processor = proc.getProcessorByName query.proc.name
+    processor = getProcessor query
+    console.log query
     if processor
       args = query.proc.args.slice()
       args.unshift finished
       args.unshift repo
       args.push callback
+      console.log args
 
       processor.apply @, args
     else

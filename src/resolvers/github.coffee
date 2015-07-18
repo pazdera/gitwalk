@@ -6,18 +6,19 @@
 #   github:$user/$repo[$branch]/$path
 
 
+minimatch = require 'minimatch'
 GitHubApi = require 'github'
+config = require '../config'
 
-GH_TOKEN = process.env.GH_TOKEN
 
 class exports.GitHub
   constructor: (expression) ->
     match = @parseExpression expression
 
     @user = match[1]
-    @repo_re = new RegExp match[2]
-    @branchRe = if match[3] then new RegExp match[3].substring 1 else /master/
-    @proc = if match[4] then new RegExp match[4].substring 1 else null
+    @repoRe = minimatch.makeRe match[2] #new RegExp match[2]
+    @branchRe = if match[3] then minimatch.makeRe match[3].substring 1 else /master/ # new RegExp
+    @proc = match[4]
 
     @repos = []
 
@@ -27,17 +28,17 @@ class exports.GitHub
 
     # TODO: authenticate using username & password too
 
-    if GH_TOKEN
+    if config.get 'selectors:github:token'
       @api.authenticate
         type: "oauth",
-        token: GH_TOKEN
+        token: config.get 'selectors:github:token'
 
   parseExpression: (expression) ->
     pattern = ///
       ^github\:
-      ([a-zA-Z0-9\-]+)\/  # user
+      ([a-zA-Z0-9\-_]+)\/ # user
       ([^\/@]+)           # repository
-      (@[^\/]+)?          # optional branch (defult branch assumed if not set)
+      (@[^\/\$]+)?        # optional branch (defult branch assumed if not set)
       (\/.+|\$)?          # optional processor
     ///
 
@@ -63,7 +64,7 @@ class exports.GitHub
         return
 
       if data.length
-        console.log page
+        console.log "Listing repos: page ##{page}"
         Array::push.apply @repos, data
         page++
         @getReposFromOrg org, page, callback
@@ -120,32 +121,24 @@ class exports.GitHub
 
     engineQueries = []
     for repo in repo_handles
-      if @repo_re.test repo.name
+      if @repoRe.test repo.name
         query =
           name: repo.name,
           urls: [repo.ssh_url, repo.clone_url, repo.git_url],
-          branchRe: @branchRe,
+          branchRe: @branchRe
 
         if @proc
-          switch @proc.substr(0)
-            when '$'
-              query.proc =
-                name: 'file',
-                args: [@proc]
-            when '/'
-              query.proc =
-                name: 'shell',
-                args: []
-            else
-              callback "Unknown processor syntax (#{@proc})"
-              return
+          query.proc = utils.matchProc @proc
+          unless query.proc?
+            callback "Unknown processor syntax (#{@proc})"
+            return
 
         engineQueries.push query
 
     if engineQueries.length
       callback null, engineQueries
     else
-      callback "No repositories match this expression '#{@repo_re}'", null
+      callback "No repositories match this expression '#{@repoRe}'", null
 
 # Quickly check whether a string could be a github expression
 #

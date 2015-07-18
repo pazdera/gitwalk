@@ -1,12 +1,11 @@
 # Various small utility functions
 
 fs = require 'fs'
-
+minimatch = require 'minimatch'
 
 fileExists = (filePath, callback) ->
-  console.log filePath
+  #console.log filePath
   fs.stat filePath, (err, stat) ->
-    throw err if err?
     callback stat?
 
 
@@ -18,9 +17,25 @@ fileExists = (filePath, callback) ->
 #
 expandVars = (string, definitions) ->
   for name, value of definitions
-    string = string.replace new RegEx "\#\{#{name}\}", value
+    string = string.replace new RegExp("\#\{#{name}\}"), value
   return string
+
+
+matchProc = (procStr) ->
+  console.log procStr
+  switch procStr.substr 0, 1
+    when '/'
+      return \
+        name: 'file',
+        args: [minimatch.makeRe procStr.substr 1]
+    when '$'
+      return \
+        name: 'shell',
+        args: []
+    else
+      return
 
 module.exports =
   fileExists: fileExists
   expandVars: expandVars
+  matchProc: matchProc

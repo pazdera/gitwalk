@@ -2,9 +2,9 @@
 
 path = require 'path'
 crypto = require 'crypto'
-tilde = require 'tilde-expansion'
+tilde = require 'expand-tilde'
 
-CACHE_ROOT = '~/.gitwalk'
+config = require './config'
 
 
 # Compute the SHA1 hash of a string
@@ -25,12 +25,13 @@ getSHA1 = (inputString) ->
 # @param callback [(String)] A function to pass the result to.
 #
 getCacheDir = (repoName, repoUrl, callback) ->
-  tilde CACHE_ROOT, (cacheRoot) ->
-    # Make the name unique by appending the hash of the URL at the end
-    dirName = "#{repoName}-#{getSHA1 repoUrl}"
+  cacheRoot = tilde config.get 'cache:root'
 
-    cacheDirPath = path.normalize path.join cacheRoot, dirName
-    callback cacheDirPath
+  # Make the name unique by appending the hash of the URL at the end
+  dirName = "#{repoName}-#{getSHA1 repoUrl}"
+
+  cacheDirPath = path.normalize path.join cacheRoot, dirName
+  callback cacheDirPath
 
 
 module.exports =

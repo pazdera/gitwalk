@@ -5,6 +5,11 @@ expect = require('chai').expect
 
 describe 'engine', ->
   it 'should run correctly', () ->
-    eng = new engine.Engine 'github:pazdera/tco@.*/.*'
-    eng.run (repo) ->
+    #eng = new engine.Engine 'github:pazdera/tco@.*/.*'
+    #eng = new engine.Engine '~/repos/kano-apps@master/kano_apps/*.py'
+    eng = new engine.Engine '~/repos/kano-apps@new-tracker$'
+    #eng = new engine.Engine 'github:pazdera/tco@master$'
+    ###eng.run (repo, done) ->
       console.log "Result: #{repo}"
+      done()###
+    eng.run 'git status'

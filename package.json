@@ -42,10 +42,12 @@
     "async": "^1.0.0",
     "chalk": "^1.0.0",
     "commander": "^2.8.1",
+    "expand-tilde": "^1.2.0",
     "github": "^0.2.4",
+    "glob": "^5.0.10",
+    "minimatch": "^2.0.8",
     "nconf": "^0.7.1",
-    "nodegit": "^0.4.0",
+    "nodegit": "^0.4.1",
     "recursive-readdir": "^1.2.1",
-    "tilde-expansion": "0.0.0"
   }
 }

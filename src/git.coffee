@@ -139,16 +139,26 @@ forceUpdateLocalBranches = (repo, head, remoteRefs, callback) ->
           return true
         .done (rv) ->
           console.log "rv:" + rv
-          console.log 'processBranches done!'
           return rv
 
     return if abort
 
+
 forceCheckoutBranch = (repo, branchRef, callback) ->
+  repo.checkoutBranch branchRef.name(),
+    checkoutStrategy: nodegit.Checkout.STRATEGY.FORCE
+  callback null
+
+old_forceCheckoutBranch = (repo, branchRef, callback) ->
+  defSig = nodegit.Signature.default repo
   console.log "Checking out #{branchRef.shorthand()}"
   nodegit.Checkout.tree repo, branchRef.name(),
                         checkoutStrategy: nodegit.Checkout.STRATEGY.FORCE
     .then ->
+      msg = "Checkout: HEAD #{branchRef.name()}"
+      console.log branchRef.name()
+      return repo.setHead branchRef.name(), defSig, msg
+    .then (result) ->
       console.log "checkout complete"
       callback null
       console.log "after resolve"

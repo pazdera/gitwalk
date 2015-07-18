@@ -4,10 +4,10 @@ recursive = require 'recursive-readdir'
 async = require 'async'
 
 module.exports = file = (repo, finished, pathRe, callback) ->
-  repoLoc = repo.path()
-  recursive repoLoc, ['#{repoLoc}/.git/**'], (err, files) ->
+  repoLoc = repo.workdir()
+  recursive repoLoc, ["#{repoLoc}/.git/**"], (err, files) ->
     async.eachSeries files, ((filePath, done) ->
-      relativePath = filePath.replace repoLoc
+      relativePath = filePath.replace repoLoc, ''
 
       # Remove the leading '/' if present
       if relativePath.substring(0, 1) == '/'
@@ -15,8 +15,9 @@ module.exports = file = (repo, finished, pathRe, callback) ->
 
       if pathRe.test relativePath
         callback filePath, done
+      else
+        done()
     ),
     ((err) ->
-      finished null
-      throw err if err
+      finished err
     )

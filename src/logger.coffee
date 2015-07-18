@@ -1,18 +1,29 @@
 # printing functions for the terminal
 
 chalk = require 'chalk'
+config = require './config'
 
-logMsg = (level, msg) ->
-  console.log "#{chalk.blue 'gitwalk'} #{level}: #{msg}"
+LEVELS =
+  none: 0
+  error: 1
+  warn: 2
+  info: 3
+  debug: 4
+
+logLevel = LEVELS[config.get 'logger:level']
+
+logMsg = (level, label, msg) ->
+  if not logLevel or logLevel >= level
+    console.log "#{chalk.blue 'gitwalk'} #{label}: #{msg}"
 
 exports.info = (msg) ->
-  logMsg chalk.green('info'), msg
+  logMsg LEVELS.info, chalk.green('info'), msg
 
 exports.warn = (msg) ->
-  logMsg chalk.black.bgYellow('warn'), msg
+  logMsg LEVELS.warn, chalk.black.bgYellow('warn'), msg
 
 exports.error = (msg) ->
-  logMsg chalk.black.bgRed('err!'), msg
+  logMsg LEVELS.error, chalk.black.bgRed('err!'), msg
 
 exports.debug = (msg) ->
-  logMsg chalk.gray('dbg?'), msg
+  logMsg LEVELS.debug, chalk.gray('dbg?'), msg

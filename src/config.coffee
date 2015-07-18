@@ -9,7 +9,7 @@ defaults =
   #selectors:
   #iterators:
 
-nconf.env()
+nconf.env('__')
      .file('user', file: tilde '~/.gitwalk.json')
      .file('system', file: '/etc/gitwalk.json')
      .defaults defaults

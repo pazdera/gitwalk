@@ -13,9 +13,10 @@ utils = require '../utils'
 # @param command [String] The command to execute.
 #
 module.exports = shell = (repo, finished, command) ->
-  repoLoc = repo.path()
-  command = expandVars command, {repo: repoLoc}
+  repoLoc = repo.workdir()
+  command = utils.expandVars command, {repo: repoLoc}
 
+  console.log "SHELL"
   child_process.exec command, {cwd: repoLoc}, (err, stdout, stderr) ->
     console.log stdout
     console.log stderr
