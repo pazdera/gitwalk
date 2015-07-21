@@ -51,6 +51,10 @@ class exports.Engine
     @backend.resolve (err, queries) =>
       return callback err if err?
 
+      if queries.length == 0
+        logger.warn 'No matches found.'
+        return callback null
+
       cache.initCache (err) =>
         return callback err if err?
 
@@ -59,9 +63,12 @@ class exports.Engine
           ((query, done) =>
             logger.info "Processing #{query.name}"
             git.prepareRepo query.name, query.urls, (err, repo) =>
-              return callback err if err?
+              return done err if err?
               @updateRepo repo, query, (err, branches) =>
-                return callback err if err?
+                return done err if err?
+                if branches.length == 0
+                  logger.warn 'No matching branches found.'
+                  return done null
                 @processBranches branches, repo, query, @iterArgs, done
           ),
           ((err) ->
@@ -71,9 +78,10 @@ class exports.Engine
   updateRepo: (repo, query, callback) ->
     git.getUpToDateRefs repo, (err, reflist) =>
       if err?
-        calback err
+        callback err
       else
         [head, remoteRefs] = @filterRefs reflist, query
+        return callback null, [] if remoteRefs.length == 0
         git.forceUpdateLocalBranches repo, head, remoteRefs, (err, branches) ->
             callback err, branches
 
@@ -99,7 +107,7 @@ class exports.Engine
   processBranches: (branches, repo, query, iterArgs, callback) =>
     async.eachSeries branches, ((branchRef, done) =>
       git.forceCheckoutBranch repo, branchRef, (err) =>
-         err if err?
+        return done err if err?
         @callProcessor repo, query, iterArgs, done
     ),
     ((err) ->

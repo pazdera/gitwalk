@@ -2,10 +2,12 @@
 
 nodegit = require 'nodegit'
 path = require 'path'
+async = require 'async'
 
 config = require './config'
 cache = require './cache'
 utils = require './utils'
+logger = require './logger'
 
 opts =
   remoteCallbacks:
@@ -105,8 +107,9 @@ forceUpdateLocalBranches = (repo, head, remoteRefs, callback) ->
 
   defSig = nodegit.Signature.default repo
 
-  for ref in remoteRefs
-    abort = do (ref) ->
+  # TODO: This looks like it's broken. The callback will be called twice
+  async.eachSeries remoteRefs,
+    ((ref, done) ->
       console.log "processing #{ref.shorthand()}"
       localBranch = path.basename ref.shorthand()
 
@@ -114,8 +117,7 @@ forceUpdateLocalBranches = (repo, head, remoteRefs, callback) ->
       if head and localBranch == head.shorthand()
         rv = repo.detachHead defSig, "Temporarily detaching head"
         if rv
-          callback "Unable to detach HEAD"
-          return true
+          return done "Unable to detach HEAD"
 
       repo.getBranchCommit ref
         .then (commit) ->
@@ -130,28 +132,32 @@ forceUpdateLocalBranches = (repo, head, remoteRefs, callback) ->
             return repo.setHead branch.name(), defSig, "Reattaching head."
           else
             return 0
-        .then (result) ->
-          if result
-            callback "Unable to attach head"
-            return true
-
-          count--
-          if count <= 0
-            callback null, branches
+        .then (rv) ->
+          if rv
+            throw "Unable to attach head"
+          else
+            done()
         .catch (err) ->
-          callback err
+          done err
           return true
         .done (rv) ->
           console.log "rv:" + rv
           return rv
-
-    return if abort
+    ),
+    ((err) ->
+      callback err, branches
+    )
 
 
 forceCheckoutBranch = (repo, branchRef, callback) ->
+  logger.debug "Checking out #{branchRef.shorthand()}"
   repo.checkoutBranch branchRef.name(),
-    checkoutStrategy: nodegit.Checkout.STRATEGY.FORCE
-  callback null
+                      checkoutStrategy: nodegit.Checkout.STRATEGY.FORCE
+    .then ->
+      callback null
+    .catch (err) ->
+      callback err
+    .done ->
 
 old_forceCheckoutBranch = (repo, branchRef, callback) ->
   defSig = nodegit.Signature.default repo

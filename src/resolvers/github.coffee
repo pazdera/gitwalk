@@ -3,7 +3,7 @@
 #
 # The expression looks like this:
 #
-#   github:$user/$repo[$branch]/$path
+#   github:$user/$repo:$branch/$path
 
 
 minimatch = require 'minimatch'
@@ -37,8 +37,8 @@ class exports.GitHub
     pattern = ///
       ^github\:
       ([a-zA-Z0-9\-_]+)\/ # user
-      ([^\/@]+)           # repository
-      (@[^\/\$]+)?        # optional branch (master assumed if not set)
+      ([^\/:]+)           # repository
+      (:[^\/\$]+)?        # optional branch (master assumed if not set)
       (\/.+|\$)?          # optional iterator
     ///
 

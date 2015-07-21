@@ -1,9 +1,11 @@
 # Resolve online and remote paths
 # This resolver acts as a fallback
 #
-# gitwalk ../abc.git ../woot.git@master:/plain.bit
-# gitwalk http://github.com/pazdera@master/woot.js
-# gitwalk ../gitwalk@*$ woot
+# gitwalk ../abc.git ../woot.git:master/plain.bit
+# gitwalk http://github.com/pazdera:master/woot.js
+# gitwalk ../gitwalk:*$ woot
+
+# gitwalk ../gitwalk:@(master)$ woot
 
 async = require 'async'
 glob = require 'glob'
@@ -15,10 +17,10 @@ utils = require '../utils'
 
 class exports.Basic
   constructor: (expression) ->
-    parts = expression.split '@'
+    parts = expression.split ':'
 
     secondPart = parts.pop()
-    firstPart = parts.join '@'
+    firstPart = parts.join ':'
 
     match = secondPart.match /([^\/\$]+)((\/.*)|\$)$/
     if !match
