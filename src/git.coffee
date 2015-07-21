@@ -9,7 +9,7 @@ cache = require './cache'
 utils = require './utils'
 logger = require './logger'
 
-opts =
+getOpts = ->
   remoteCallbacks:
     # GitHub will fail cert check on some OSX machine.
     # This overrides that check.
@@ -35,24 +35,31 @@ class CloneError extends Error
 
 
 cloneRepo = (repoUrl, targetDir, callback) ->
-  console.log 'cloning ...'
+  logger.info "Cloning from #{repoUrl}"
+  opts = getOpts()
   nodegit.Clone.clone repoUrl, targetDir, opts
     .then (repo) ->
-      console.log 'downloaded!'
+      logger.debug 'Cloned successfully'
       callback null, repo
     .catch (err) ->
-      callback err
+      logger.error "Operation failed (#{err})"
+      logger.debug err.stack
+      callback new CloneError "Failed to clone the repository"
     .done ->
 
 
 openRepo = (repoUrl, targetDir, callback) ->
-  console.log 'openning ...'
+  logger.debug "Openning #{targetDir}"
   nodegit.Repository.open targetDir
     .then (repo) ->
-      console.log 'open!'
+      logger.debug 'Opened successfully'
       callback null, repo
     .catch (err) ->
-      callback err
+      logger.error err.message
+      logger.debug err.stack
+      logger.error "Please run `rm -rf #{targetDir}` to remove this "+
+                   "repository from cache and try again"
+      callback new Error "Failed to open the cached repository"
     .done ->
 
 
@@ -66,40 +73,37 @@ getRepoHandle = (repoUrl, dir, callback) ->
 
 # Fetch and return a list of all references in the repo
 getUpToDateRefs = (repo, callback) ->
-  console.log 'Got repo handle!'
-  repo.fetchAll opts.remoteCallbacks
+  logger.debug "Fetching updates"
+  repo.fetchAll getOpts().remoteCallbacks
     .then ->
-      console.log "fetch done"
+      logger.debug "Fetched successfully"
       return repo.getReferences()
     .then (reflist) ->
       callback null, reflist
     .catch (err) ->
-      console.log err
-      callback err
+      logger.error err.message
+      logger.debug err.stack
+      callback new Error 'Failed to fetch updates from remote'
     .done ->
-      console.log 'Done!'
 
 
 prepareRepo = (name, cloneUrls, callback) ->
   url = cloneUrls.shift()
   cache.getCacheDir name, url, (cacheDir) ->
-    try
-      getRepoHandle url, cacheDir, (err, repo) ->
-        console.log err, repo
-        if err?
-          callback err
-          return
-
-        callback null, repo
-    catch err
-      console.log "xx", err
-      if err instanceof CloneError
-        if cloneUrls.length == 0
-          calback "Unable to clone the repository"
+    getRepoHandle url, cacheDir, (err, repo) ->
+      if err?
+        if err instanceof CloneError
+          if cloneUrls.length == 0
+            callback new Error "Unable to clone the repository"
+          else
+            # Try again with an alternative URL
+            prepareRepo cloneUrls, callback
         else
-          prepareRepo cloneUrls, callback
+          logger.error "An error occured while accessing #{name} (#{err.message})"
+          callback err
       else
-        throw err
+        callback null, repo
+
 
 forceUpdateLocalBranches = (repo, head, remoteRefs, callback) ->
   branches = []
@@ -107,10 +111,9 @@ forceUpdateLocalBranches = (repo, head, remoteRefs, callback) ->
 
   defSig = nodegit.Signature.default repo
 
-  # TODO: This looks like it's broken. The callback will be called twice
   async.eachSeries remoteRefs,
     ((ref, done) ->
-      console.log "processing #{ref.shorthand()}"
+      logger.debug "Updating HEAD of #{path.basename ref.shorthand()}"
       localBranch = path.basename ref.shorthand()
 
       # detach head if it would be overriden
@@ -124,8 +127,7 @@ forceUpdateLocalBranches = (repo, head, remoteRefs, callback) ->
           return nodegit.Branch.create repo, localBranch, commit, 1, defSig,
                  "#{localBranch}: created by gitwalk"
         .then (branch) ->
-          console.log "Created #{branch.shorthand()} (upstream #{ref})"
-          console.log nodegit.Branch.setUpstream branch, ref.shorthand()
+          nodegit.Branch.setUpstream branch, ref.shorthand()
           branches.push branch
 
           if head and localBranch == head.shorthand()
@@ -139,10 +141,7 @@ forceUpdateLocalBranches = (repo, head, remoteRefs, callback) ->
             done()
         .catch (err) ->
           done err
-          return true
-        .done (rv) ->
-          console.log "rv:" + rv
-          return rv
+        .done ->
     ),
     ((err) ->
       callback err, branches
@@ -150,35 +149,17 @@ forceUpdateLocalBranches = (repo, head, remoteRefs, callback) ->
 
 
 forceCheckoutBranch = (repo, branchRef, callback) ->
-  logger.debug "Checking out #{branchRef.shorthand()}"
+  logger.info "On branch #{branchRef.shorthand()}"
   repo.checkoutBranch branchRef.name(),
                       checkoutStrategy: nodegit.Checkout.STRATEGY.FORCE
     .then ->
+      logger.debug 'Checked out successfully'
       callback null
     .catch (err) ->
-      callback err
-    .done ->
-
-old_forceCheckoutBranch = (repo, branchRef, callback) ->
-  defSig = nodegit.Signature.default repo
-  console.log "Checking out #{branchRef.shorthand()}"
-  nodegit.Checkout.tree repo, branchRef.name(),
-                        checkoutStrategy: nodegit.Checkout.STRATEGY.FORCE
-    .then ->
-      msg = "Checkout: HEAD #{branchRef.name()}"
-      console.log branchRef.name()
-      return repo.setHead branchRef.name(), defSig, msg
-    .then (result) ->
-      console.log "checkout complete"
-      callback null
-      console.log "after resolve"
-    .catch (err) ->
-      console.log "qq",err
       callback err
     .done ->
 
 module.exports =
-  nodegit_opts: opts
   getUpToDateRefs: getUpToDateRefs
   prepareRepo: prepareRepo
   forceUpdateLocalBranches: forceUpdateLocalBranches

@@ -46,7 +46,6 @@ class exports.Engine
     @backend = getResolver @expression
     @iterArgs = iterArgs
 
-  # TODO: Change throws for callbacks
   run: (callback) ->
     @backend.resolve (err, queries) =>
       return callback err if err?
@@ -58,7 +57,7 @@ class exports.Engine
       cache.initCache (err) =>
         return callback err if err?
 
-        logger.info 'Starting to process repositories'
+        logger.debug 'Starting to process repositories'
         async.eachSeries queries,
           ((query, done) =>
             logger.info "Processing #{query.name}"
@@ -98,10 +97,6 @@ class exports.Engine
           if query.branchRe.test localName
             remoteRefs.push ref
 
-    console.log 'Matching remotes:'
-    for b in remoteRefs
-      console.log b.name()
-
     return [head, remoteRefs]
 
   processBranches: (branches, repo, query, iterArgs, callback) =>
@@ -117,13 +112,11 @@ class exports.Engine
   # TODO: all expressions must have matching processors
   callProcessor: (repo, query, iterArgs, finished) ->
     processor = getProcessor query
-    console.log query
     if processor
       args = query.proc.args.slice()
       args.unshift finished
       args.unshift repo
       Array::push.apply args, iterArgs
-      console.log args
 
       processor.apply @, args
     else

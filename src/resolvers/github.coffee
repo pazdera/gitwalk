@@ -9,6 +9,7 @@
 minimatch = require 'minimatch'
 GitHubApi = require 'github'
 config = require '../config'
+utils = require '../utils'
 
 
 class exports.GitHub
