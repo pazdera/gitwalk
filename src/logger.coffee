@@ -17,6 +17,9 @@ logMsg = (level, label, msg) ->
   if not logLevel or logLevel >= level
     console.log "#{chalk.blue 'gitwalk'} #{label}: #{msg}"
 
+exports.highlight = (string) ->
+  chalk.yellow string
+
 exports.info = (msg) ->
   logMsg LEVELS.info, chalk.green('info'), msg
 
@@ -27,4 +30,4 @@ exports.error = (msg) ->
   logMsg LEVELS.error, chalk.black.bgRed('err!'), msg
 
 exports.debug = (msg) ->
-  logMsg LEVELS.debug, chalk.gray('dbg?'), msg
+  logMsg LEVELS.debug, chalk.bgBlack('dbg?'), msg

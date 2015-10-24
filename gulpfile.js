@@ -36,7 +36,7 @@ gulp.task('coffee', function() {
 
 gulp.task('test', function() {
     sources = testDir + '*.coffee';
-    sources = testDir + 'engine.coffee';
+    //sources = testDir + 'engine.coffee';
 
     return gulp.src(sources, {read: false})
                .pipe(mocha({reporter: 'nyan', timeout: 30000}));

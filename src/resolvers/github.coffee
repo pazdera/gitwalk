@@ -10,6 +10,7 @@ minimatch = require 'minimatch'
 GitHubApi = require 'github'
 config = require '../config'
 utils = require '../utils'
+logger = require '../logger'
 
 
 class exports.GitHub
@@ -17,9 +18,10 @@ class exports.GitHub
     match = @parseExpression expression
 
     @user = match[1]
-    @repoRe = minimatch.makeRe match[2] #new RegExp match[2]
-    @branchRe = if match[3] then minimatch.makeRe match[3].substring 1 else /master/ # new RegExp
-    @proc = match[4]
+    @repoRe = new RegExp match[2] #minimatch.makeRe match[2]
+    @branchRe = if match[3] then new RegExp match[3] else /master/ # minimatch.makeRe
+
+    logger.debug "GitHub: #{@user}/#{match[2]}, branch #{@branchRe.source}"
 
     @repos = []
 
@@ -27,20 +29,26 @@ class exports.GitHub
       version: '3.0.0'
     }
 
-    # TODO: authenticate using username & password too
-
-    if config.get 'selectors:github:token'
+    if config.get 'resolvers:github:token'
       @api.authenticate
         type: "oauth",
-        token: config.get 'selectors:github:token'
+        token: config.get 'resolvers:github:token'
+    else if config.get('resolvers:github:username') and
+            config.get('resolvers:github:password')
+      @api.authenticate
+        type: "basic"
+        username: config.get 'resolvers:github:username'
+        password: config.get 'resolvers:github:password'
+     else
+       logger.debug 'No GitHub authentication'
+
 
   parseExpression: (expression) ->
     pattern = ///
       ^github\:
       ([a-zA-Z0-9\-_]+)\/ # user
-      ([^\/:]+)           # repository
-      (:[^\/\$]+)?        # optional branch (master assumed if not set)
-      (\/.+|\$)?          # optional iterator
+      ([^:]+)             # repository
+      \:(.+)?             # optional branch (master assumed if not set)
     ///
 
     match = expression.match pattern
@@ -65,7 +73,7 @@ class exports.GitHub
         return
 
       if data.length
-        console.log "Listing repos: page ##{page}"
+        logger.debug "Listing repositories of #{org}: page ##{page}"
         Array::push.apply @repos, data
         page++
         @getReposFromOrg org, page, callback
@@ -87,6 +95,7 @@ class exports.GitHub
         return
 
       if data.length
+        logger.debug "Listing repositories of #{user}: page ##{page}"
         Array::push.apply @repos, data
         page++
         @getReposFromUser user, page, callback
@@ -127,12 +136,6 @@ class exports.GitHub
           name: repo.name,
           urls: [repo.ssh_url, repo.clone_url, repo.git_url],
           branchRe: @branchRe
-
-        if @proc
-          query.proc = utils.matchProc @proc
-          unless query.proc?
-            callback "Unknown processor syntax (#{@proc})"
-            return
 
         engineQueries.push query
 

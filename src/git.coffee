@@ -3,6 +3,7 @@
 nodegit = require 'nodegit'
 path = require 'path'
 async = require 'async'
+minimatch = require 'minimatch'
 
 config = require './config'
 cache = require './cache'
@@ -10,20 +11,37 @@ utils = require './utils'
 logger = require './logger'
 
 getOpts = ->
-  remoteCallbacks:
-    # GitHub will fail cert check on some OSX machine.
-    # This overrides that check.
-    certificateCheck: ->
-      return 1
+  fetchOpts:
+    callbacks:
+      # GitHub will fail cert check on some OSX machines.
+      # This overrides that check.
+      #
+      # TODO: Maybe this could check whether what platform are we on?
+      certificateCheck: ->
+        return 1
 
-    credentials: (url, userName) ->
-      # TODO: make this configurable
-      #       add plain-text auth
-      #return nodegit.Cred.sshKeyFromAgent(userName)
-      return nodegit.Cred.sshKeyNew(userName,
-                                    config.get('git:key:public'),
-                                    config.get('git:key:private'),
-                                    '')
+      credentials: (url, userName) ->
+        creds = config.get 'git:auth'
+        for id, cred of creds
+          re = new RegExp cred['pattern']
+          if url.match re
+            switch
+              when 'username' of cred and 'password' of cred
+                logger.debug "Using plain auth (#{id})"
+                return nodegit.Cred.userpassPlaintextNew cred.username,
+                                                         cred.password
+              when 'public_key' of cred and 'private_key' of cred and \
+                   'passphrase' of cred
+                logger.debug "Using SSH (#{id})"
+                return nodegit.Cred.sshKeyNew userName,
+                                              cred.public_key,
+                                              cred.private_key,
+                                              cred.passphrase
+              else
+                logger.warn "Misconfigured git auth for #{id}"
+
+        logger.debug "No auth method found for this URL"
+        return nodegit.Cred.defaultNew()
 
 
 # Thrown by the engine when a clone fails
@@ -31,7 +49,7 @@ getOpts = ->
 # This exception is caught and the engine retries with
 # an alternative URL if available.
 #
-class CloneError extends Error
+class CloneError extends Error then constructor: -> super
 
 
 cloneRepo = (repoUrl, targetDir, callback) ->
@@ -49,10 +67,9 @@ cloneRepo = (repoUrl, targetDir, callback) ->
 
 
 openRepo = (repoUrl, targetDir, callback) ->
-  logger.debug "Openning #{targetDir}"
+  logger.debug "Opening repo at #{targetDir}"
   nodegit.Repository.open targetDir
     .then (repo) ->
-      logger.debug 'Opened successfully'
       callback null, repo
     .catch (err) ->
       logger.error err.message
@@ -74,10 +91,10 @@ getRepoHandle = (repoUrl, dir, callback) ->
 # Fetch and return a list of all references in the repo
 getUpToDateRefs = (repo, callback) ->
   logger.debug "Fetching updates"
-  repo.fetchAll getOpts().remoteCallbacks
+  repo.fetchAll getOpts().fetchOpts
     .then ->
       logger.debug "Fetched successfully"
-      return repo.getReferences()
+      return repo.getReferences(nodegit.Reference.TYPE.LISTALL)
     .then (reflist) ->
       callback null, reflist
     .catch (err) ->
@@ -97,7 +114,7 @@ prepareRepo = (name, cloneUrls, callback) ->
             callback new Error "Unable to clone the repository"
           else
             # Try again with an alternative URL
-            prepareRepo cloneUrls, callback
+            prepareRepo name, cloneUrls, callback
         else
           logger.error "An error occured while accessing #{name} (#{err.message})"
           callback err
@@ -109,7 +126,7 @@ forceUpdateLocalBranches = (repo, head, remoteRefs, callback) ->
   branches = []
   count = remoteRefs.length
 
-  defSig = nodegit.Signature.default repo
+  #defSig = nodegit.Signature.default repo
 
   async.eachSeries remoteRefs,
     ((ref, done) ->
@@ -118,20 +135,19 @@ forceUpdateLocalBranches = (repo, head, remoteRefs, callback) ->
 
       # detach head if it would be overriden
       if head and localBranch == head.shorthand()
-        rv = repo.detachHead defSig, "Temporarily detaching head"
+        rv = repo.detachHead()
         if rv
           return done "Unable to detach HEAD"
 
       repo.getBranchCommit ref
         .then (commit) ->
-          return nodegit.Branch.create repo, localBranch, commit, 1, defSig,
-                 "#{localBranch}: created by gitwalk"
+          return nodegit.Branch.create repo, localBranch, commit, 1
         .then (branch) ->
           nodegit.Branch.setUpstream branch, ref.shorthand()
           branches.push branch
 
           if head and localBranch == head.shorthand()
-            return repo.setHead branch.name(), defSig, "Reattaching head."
+            return repo.setHead branch.name()
           else
             return 0
         .then (rv) ->

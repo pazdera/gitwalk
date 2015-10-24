@@ -1,31 +1,27 @@
 # Resolver of the repository selectors
 
 # library interface:
-#   gitwalk 'exp/.*', (file, done) ->
 #
-#   gitwalk 'exp$', "ls -l"
+#   gitwalk 'github:user/repo@branch', gitwalk.proc.files '.*'
+#     ((file_path, done) ->
+#     ),
+#     ((err) ->
+#     )
 #
-#   gitwalk 'exp#', (commit, author, message, done) ->
+#   gitwalk 'github:user/repo@branch', (gitwalk.proc.shell 'ls -l .',
+#       (err) ->
+#     )
 #
-#   gitwalk 'exp', (repo, done) ->
-#
-#   gitwalk.configure (conf) ->
-#     conf.async = false
-#     conf.regex = false
+#   gitwalk 'github:user/repo@branch', (err, repo, calback) ->
+#     ((err) ->
+#     )
 #
 
 # terminal ui:
-#   gitwalk 'exp/dir/.*', 'grep 'class List' #{file}'
 #
-#   gitwalk 'exp$', 'ls -l'
-#
-#   gitwalk 'exp#', 'echo #{commit} [#{author}] #{message}'
-#
-#   gitwalk 'exp', './do-something #{repo}'
-#
-#   gitwalk -r -a
-#
-#   gitwalk -V -h
+#  gitwalk 'github:user/repo@branch' files '.*' 'grep exp #{file}'
+#  gitwalk 'github:user/repo@branch' commits '.*' 'echo #{msg} #{author} #{sha}'
+#  gitwalk 'github:user/repo@branch' shell 'ls -l #{repo}'
 #
 
 fs = require 'fs'
@@ -34,45 +30,94 @@ nodegit = require 'nodegit'
 async = require 'async'
 
 logger = require './logger'
-getResolver = require './resolvers'
-getProcessor = require './processors'
 cache = require './cache'
 git = require './git'
 utils = require './utils'
-
+getResolver = require './resolvers'
 
 class exports.Engine
-  constructor: (@expression, iterArgs...) ->
-    @backend = getResolver @expression
-    @iterArgs = iterArgs
+  constructor: (@expressions, @processor) ->
+    if !(@expressions instanceof Array)
+      @expressions = [@expressions]
+
+    @resolvers =
+      include: []
+      exclude: []
+    @queries = []
 
   run: (callback) ->
-    @backend.resolve (err, queries) =>
+    async.eachSeries @expressions, ((exp, done) =>
+      bucket = @resolvers.include
+      if exp[0] == '^'
+        exp = exp.slice 1
+        bucket = @resolvers.exclude
+
+      bucket.push getResolver exp
+      done()
+    ),
+    (err) =>
+      return callback err if err?
+      @addQueries (err) =>
+        return callback err if err?
+        @subtractQueries (err) =>
+          return callback err if err?
+          @do_run callback
+
+  addQueries: (callback) ->
+    async.eachSeries @resolvers.include, ((res, done) =>
+      res.resolve (err, queries) =>
+        return done err if err?
+        for newQuery in queries
+          addQuery = true
+          for newUrl in newQuery.urls
+            for oldQuery in @queries
+              if newUrl in oldQuery.urls
+                addQuery = false
+                break
+            break if !addQuery
+          @queries.push newQuery if addQuery
+        done()
+    ), callback
+
+  subtractQueries: (callback) ->
+    async.eachSeries @resolvers.exclude, ((res, done) =>
+      res.resolve (err, queries) =>
+        return done err if err?
+        for newQuery in queries
+          if newQuery.branchRe.source != 'master'
+            logger.warn "Branch will be ignored on exclude query"
+          rmQuery = null
+          for newUrl in newQuery.urls
+            for oldQuery in @queries
+              if newUrl in oldQuery.urls
+                rmQuery = oldQuery
+                break
+            if rmQuery
+              idx = @queries.indexOf rmQuery
+              @queries.splice(idx, 1)
+        done()
+    ), callback
+
+  do_run: (callback) ->
+    if @queries.length == 0
+      logger.warn 'No matches found.'
+      return callback null
+
+    cache.initCache (err) =>
       return callback err if err?
 
-      if queries.length == 0
-        logger.warn 'No matches found.'
-        return callback null
-
-      cache.initCache (err) =>
-        return callback err if err?
-
-        logger.debug 'Starting to process repositories'
-        async.eachSeries queries,
-          ((query, done) =>
-            logger.info "Processing #{query.name}"
-            git.prepareRepo query.name, query.urls, (err, repo) =>
-              return done err if err?
-              @updateRepo repo, query, (err, branches) =>
-                return done err if err?
-                if branches.length == 0
-                  logger.warn 'No matching branches found.'
-                  return done null
-                @processBranches branches, repo, query, @iterArgs, done
-          ),
-          ((err) ->
-            callback err
-          )
+      logger.debug 'Starting to process repositories'
+      async.eachSeries @queries, ((query, done) =>
+        logger.info "Processing #{query.name}"
+        git.prepareRepo query.name, query.urls, (err, repo) =>
+          return done err if err?
+          @updateRepo repo, query, (err, branches) =>
+            return done err if err?
+            if branches.length == 0
+              logger.warn 'No matching branches found.'
+              return done null
+            @processBranches branches, repo, query, done
+      ), callback
 
   updateRepo: (repo, query, callback) ->
     git.getUpToDateRefs repo, (err, reflist) =>
@@ -99,25 +144,27 @@ class exports.Engine
 
     return [head, remoteRefs]
 
-  processBranches: (branches, repo, query, iterArgs, callback) =>
+  processBranches: (branches, repo, query, callback) =>
     async.eachSeries branches, ((branchRef, done) =>
       git.forceCheckoutBranch repo, branchRef, (err) =>
         return done err if err?
-        @callProcessor repo, query, iterArgs, done
+        @processor repo, done
     ),
     ((err) ->
       callback err
     )
 
+  # TODO: Obsolete
   # TODO: all expressions must have matching processors
-  callProcessor: (repo, query, iterArgs, finished) ->
-    processor = getProcessor query
-    if processor
-      args = query.proc.args.slice()
-      args.unshift finished
-      args.unshift repo
-      Array::push.apply args, iterArgs
-
-      processor.apply @, args
-    else
-      callback repo, finished
+  #callProcessor: (repo, query, iterArgs, finished) ->
+  #  processor = getProcessor query
+  #  if processor
+  #    args = query.proc.args.slice()
+  #    args.unshift finished
+  #    args.unshift repo
+  #    Array::push.apply args, iterArgs
+  #
+  #    processor.apply @, args
+  #  else
+  #    # FIXME: is this a bug?
+  #    callback repo, finished
