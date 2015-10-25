@@ -165,7 +165,7 @@ forceUpdateLocalBranches = (repo, head, remoteRefs, callback) ->
 
 
 forceCheckoutBranch = (repo, branchRef, callback) ->
-  logger.info "On branch #{branchRef.shorthand()}"
+  logger.info "On branch #{logger.highlight branchRef.shorthand()}"
   repo.checkoutBranch branchRef.name(),
                       checkoutStrategy: nodegit.Checkout.STRATEGY.FORCE
     .then ->
