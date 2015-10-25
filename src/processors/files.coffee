@@ -4,8 +4,11 @@ recursive = require 'recursive-readdir'
 async = require 'async'
 
 logger = require '../logger'
+utils = require '../utils'
 
-module.exports = files = (pathRe, callback) ->
+# The callback is called for every file with the following signature
+#     (filePath, callback) ->
+module.exports.generator = files = (pathRe, callback) ->
   return (repo, finished) ->
     repoLoc = repo.workdir()
     recursive repoLoc, ["#{repoLoc}/.git/**"], (err, files) ->
@@ -26,3 +29,18 @@ module.exports = files = (pathRe, callback) ->
       ((err) ->
         finished err
       )
+
+
+module.exports.shell = (args) ->
+  if args.length <= 1
+    throw new Error "Missing arguments to files: <pattern> <command>"
+    return
+
+  return (repo, finished) ->
+    pattern = args.shift()
+
+    func = files pattern, (filePath, callback) ->
+      command = utils.expandVars args.join(' '), path: filePath
+      utils.runCommand command, repo.workdir(), callback
+
+    func repo, finished

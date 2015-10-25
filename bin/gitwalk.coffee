@@ -8,6 +8,7 @@
 program = require 'commander'
 pkginfo = require '../package.json'
 gitwalk = require '../src/gitwalk'
+processors = require '../src/processors'
 logger = require '../src/logger'
 
 program
@@ -24,8 +25,8 @@ procArgs = []
 
 while program.args.length > 0
   arg = program.args.shift()
-  if arg of gitwalk.proc
-    proc = gitwalk.proc[arg]
+  if arg of processors
+    proc = processors[arg]
     procName = arg
     procArgs = program.args
     break
@@ -38,6 +39,7 @@ if !('shell' of proc)
 
 gitwalk expressions, proc.shell(procArgs), (err) ->
   if err?
+    console.log err.stack
     logger.error err
     process.exit 1
   else

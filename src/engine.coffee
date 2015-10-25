@@ -148,7 +148,10 @@ class exports.Engine
     async.eachSeries branches, ((branchRef, done) =>
       git.forceCheckoutBranch repo, branchRef, (err) =>
         return done err if err?
-        @processor repo, done
+        try
+          @processor repo, done
+        catch err
+          done err
     ),
     ((err) ->
       callback err

@@ -2,6 +2,8 @@
 
 fs = require 'fs'
 minimatch = require 'minimatch'
+child_process = require 'child_process'
+logger = require './logger'
 
 fileExists = (filePath, callback) ->
   #console.log filePath
@@ -34,7 +36,21 @@ matchProc = (procStr) ->
     else
       return
 
-module.exports =
-  fileExists: fileExists
-  expandVars: expandVars
-  matchProc: matchProc
+runCommand = (command, cwd, callback) ->
+    if !callback
+      callback = cwd
+      cwd = process.cwd()
+
+    logger.debug "Running '#{command}'"
+    proc = child_process.spawn '/bin/sh', ['-c', command],
+      stdio: 'inherit'
+      cwd: cwd
+
+    proc.on 'error', callback
+    proc.on 'close', (code) ->
+      if code > 0
+        logger.error "Command exited with non-zero: #{code}"
+
+      callback()
+
+module.exports = {fileExists, expandVars, matchProc, runCommand}

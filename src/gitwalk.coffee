@@ -19,4 +19,4 @@ module.exports = gitwalk = (expression, processor, callback) ->
   eng = new engine.Engine(expression, processor)
   eng.run callback
 
-module.exports.proc = proc
+module.exports.proc = new -> @[name] = mod.generator for name, mod of proc; @
