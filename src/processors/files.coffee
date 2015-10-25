@@ -40,7 +40,7 @@ module.exports.shell = (args) ->
     pattern = args.shift()
 
     func = files pattern, (filePath, callback) ->
-      command = utils.expandVars args.join(' '), path: filePath
+      command = utils.expandVars args.join(' '), file: filePath
       utils.runCommand command, repo.workdir(), callback
 
     func repo, finished
