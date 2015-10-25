@@ -14,8 +14,11 @@ logger = require '../src/logger'
 program
   .version pkginfo.version
   .usage '[options] <expr...> <proc> <cmd...>'
-  .option '-a, --async', 'Process the repositories asynchronously in parallel'
-  .option '-r, --regex', 'Use regular expressions instead of minimax matching'
+  #.option '-a, --async', 'Process the repositories asynchronously in parallel'
+  #.option '-r, --regex', 'Use regular expressions instead of minimax matching'
+  #.option '-c, --clear-cache', 'Clear the cache and exit'
+  #.option '-l, --logging-level', 'Force logging level'
+  #.option '-m, --match-only', 'Only print the list of matching repos'
   .parse process.argv
 
 expressions = []
