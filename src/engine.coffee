@@ -153,18 +153,3 @@ class exports.Engine
     ((err) ->
       callback err
     )
-
-  # TODO: Obsolete
-  # TODO: all expressions must have matching processors
-  #callProcessor: (repo, query, iterArgs, finished) ->
-  #  processor = getProcessor query
-  #  if processor
-  #    args = query.proc.args.slice()
-  #    args.unshift finished
-  #    args.unshift repo
-  #    Array::push.apply args, iterArgs
-  #
-  #    processor.apply @, args
-  #  else
-  #    # FIXME: is this a bug?
-  #    callback repo, finished

@@ -2,6 +2,6 @@
 # embedded in resolver expressions
 
 files = require './files'
-shell = require './shell'
+command = require './command'
 
-module.exports = {files, shell}
+module.exports = {files, command}

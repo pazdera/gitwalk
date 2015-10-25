@@ -8,7 +8,7 @@ logger = require '../logger'
 #
 # @param command [String] The command to execute.
 #
-module.exports = shell = (command) ->
+module.exports = command = (command) ->
   return (repo, callback) ->
     repoLoc = repo.workdir()
     command = utils.expandVars command, {repo: repoLoc}
