@@ -9,7 +9,7 @@ logger = require '../logger'
 #
 module.exports.generator = command = (command) ->
   return (repo, callback) ->
-    command = utils.expandVars command, {repo: repoLoc}
+    command = utils.expandVars command, {repo: repo.workdir()}
     utils.runCommand command, repo.workdir(), callback
 
 module.exports.shell = (args) ->
