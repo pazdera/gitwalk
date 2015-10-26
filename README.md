@@ -22,9 +22,7 @@ as the command line.
 
 Radek Pazdera &lt;me@radek.io&gt;
 
-## License
-
-(The MIT License)
+## Licence (MIT)
 
 Copyright (c) 2015 Radek Pazdera &lt;me@radek.io&gt;
 
