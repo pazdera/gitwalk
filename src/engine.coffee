@@ -149,6 +149,7 @@ class exports.Engine
       git.forceCheckoutBranch repo, branchRef, (err) =>
         return done err if err?
         try
+          logger.debug 'Starting processing'
           @processor repo, done
         catch err
           done err
