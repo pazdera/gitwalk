@@ -19,7 +19,7 @@ class exports.GitHub
 
     @user = match[1]
     @repoRe = new RegExp match[2] #minimatch.makeRe match[2]
-    @branchRe = if match[3] then new RegExp match[3] else /master/ # minimatch.makeRe
+    @branchRe = if match[4] then new RegExp match[4] else /master/ # minimatch.makeRe
 
     logger.debug "GitHub: #{@user}/#{match[2]}, branch #{@branchRe.source}"
 
@@ -48,7 +48,7 @@ class exports.GitHub
       ^github\:
       ([a-zA-Z0-9\-_]+)\/ # user
       ([^:]+)             # repository
-      \:(.+)?             # optional branch (master assumed if not set)
+      (\:(.+))?           # optional branch (master assumed if not set)
     ///
 
     match = expression.match pattern
