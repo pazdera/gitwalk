@@ -1,4 +1,4 @@
-github = require '../src/resolvers/github'
+github = require '../src/lib/resolvers/github'
 
 should = require('chai').should()
 expect = require('chai').expect

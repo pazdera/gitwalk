@@ -1,5 +1,5 @@
-engine = require '../src/engine'
-proc = require '../src/processors'
+engine = require '../src/lib/engine'
+proc = require '../src/lib/processors'
 
 should = require('chai').should()
 expect = require('chai').expect
