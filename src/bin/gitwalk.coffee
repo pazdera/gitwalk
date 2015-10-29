@@ -42,7 +42,7 @@ if !('shell' of proc)
 
 gitwalk expressions, proc.shell(procArgs), (err) ->
   if err?
-    console.log err.stack
+    #console.log err.stack
     logger.error err
     process.exit 1
   else
