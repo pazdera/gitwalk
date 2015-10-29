@@ -1,10 +1,10 @@
 {
   "name": "gitwalk",
   "version": "0.0.1",
-  "description": "Do things on groups of repositories.",
-  "main": "lib/gitwalk.js",
+  "description": "Processing groups of git repositories.",
+  "main": "./lib/gitwalk.js",
   "bin": {
-    "gitwalk": "bin/gitwalk"
+    "gitwalk": "./bin/gitwalk"
   },
   "scripts": {
     "start": "node bin/gitwalk",
@@ -33,6 +33,7 @@
     "gulp": "^3.8.11",
     "gulp-coffee": "^2.3.1",
     "gulp-coffeelint": "^0.5.0",
+    "gulp-debug": "^2.1.2",
     "gulp-mocha": "^2.1.0",
     "gulp-rename": "^1.2.2",
     "gulp-util": "^3.0.4",
@@ -40,6 +41,7 @@
   },
   "dependencies": {
     "async": "^1.0.0",
+    "bluebird": "^3.0.2",
     "chalk": "^1.0.0",
     "commander": "^2.8.1",
     "cson": "^3.0.2",
@@ -49,7 +51,7 @@
     "filesize-parser": "^1.2.0",
     "github": "^0.2.4",
     "glob": "^5.0.10",
-    "minimatch": "^3.0.0",
+    "minimatch": "^2.0.1",
     "mkdirp": "^0.5.1",
     "nconf": "^0.8.2",
     "nodegit": "0.5.0",

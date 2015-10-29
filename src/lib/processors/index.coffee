@@ -3,5 +3,6 @@
 
 files = require './files'
 command = require './command'
+commits = require './commits'
 
-module.exports = {files, command}
+module.exports = {files, command, commits}
