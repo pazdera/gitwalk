@@ -6,10 +6,10 @@
 #   gitwalk 'github:pazdera/.*@master?'
 
 program = require 'commander'
-pkginfo = require '../package.json'
-gitwalk = require '../src/gitwalk'
-processors = require '../src/processors'
-logger = require '../src/logger'
+pkginfo = require '../../package.json'
+gitwalk = require '../lib/gitwalk'
+processors = require '../lib/processors'
+logger = require '../lib/logger'
 
 program
   .version pkginfo.version
@@ -25,6 +25,10 @@ expressions = []
 proc = null
 procName = null
 procArgs = []
+
+if program.args.length == 0
+  program.outputHelp()
+  process.exit 1
 
 while program.args.length > 0
   arg = program.args.shift()
