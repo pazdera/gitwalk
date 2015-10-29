@@ -2,12 +2,12 @@
   "name": "gitwalk",
   "version": "0.0.1",
   "description": "Processing groups of git repositories.",
-  "main": "./lib/gitwalk.js",
+  "main": "./out/lib/gitwalk.js",
   "bin": {
-    "gitwalk": "./bin/gitwalk"
+    "gitwalk": "./out/bin/gitwalk.js"
   },
   "scripts": {
-    "start": "node bin/gitwalk",
+    "start": "node ./out/bin/gitwalk.js",
     "test": "gulp test"
   },
   "repository": {
