@@ -38,16 +38,22 @@ module.exports.generator = commits = (callback) ->
 
 # TODO: Needs fixing
 module.exports.shell = (args) ->
-  if args.length <= 1
-    throw new Error "Missing arguments to files: <pattern> <command>"
+  if args.length < 1
+    throw new Error "Missing arguments to files: <command>"
     return
 
   return (repo, finished) ->
     argsCopy = args.slice()
-    pattern = argsCopy.shift()
 
-    func = files pattern, (filePath, callback) ->
-      command = utils.expandVars argsCopy.join(' '), file: filePath
+    func = commits (commit, callback) ->
+      vars =
+        sha: commit.sha()
+        message: commit.message()
+        summary: commit.summary()
+        author: commit.author()
+        committer: commit.committer()
+
+      command = utils.expandVars argsCopy.join(' '), vars
       utils.runCommand command, repo.workdir(), callback
 
     func repo, finished
