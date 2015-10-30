@@ -34,73 +34,22 @@ cache = require './cache'
 git = require './git'
 utils = require './utils'
 getResolver = require './resolvers'
+ExpressionSet = require('./expressions').ExpressionSet
 
 class exports.Engine
-  constructor: (@expressions, @processor) ->
-    if !(@expressions instanceof Array)
-      @expressions = [@expressions]
-
-    @resolvers =
-      include: []
-      exclude: []
-    @queries = []
+  constructor: (expressions, @processor) ->
+    if !(expressions instanceof Array)
+      expressions = [expressions]
+    @expressions = new ExpressionSet expressions, getResolver
 
   run: (callback) ->
-    logger.info 'Resolving expressions'
-    async.eachSeries @expressions, ((exp, done) =>
-      bucket = @resolvers.include
-      if exp[0] == '^'
-        exp = exp.slice 1
-        bucket = @resolvers.exclude
-
-      bucket.push getResolver exp
-      done()
-    ),
-    (err) =>
+    logger.info 'Evaluating expressions'
+    @expressions.getQueries (err, queries) =>
       return callback err if err?
-      @addQueries (err) =>
-        return callback err if err?
-        @subtractQueries (err) =>
-          return callback err if err?
-          @do_run callback
+      @do_run queries, callback
 
-  addQueries: (callback) ->
-    async.eachSeries @resolvers.include, ((res, done) =>
-      res.resolve (err, queries) =>
-        return done err if err?
-        for newQuery in queries
-          addQuery = true
-          for newUrl in newQuery.urls
-            for oldQuery in @queries
-              if newUrl in oldQuery.urls
-                addQuery = false
-                break
-            break if !addQuery
-          @queries.push newQuery if addQuery
-        done()
-    ), callback
-
-  subtractQueries: (callback) ->
-    async.eachSeries @resolvers.exclude, ((res, done) =>
-      res.resolve (err, queries) =>
-        return done err if err?
-        for newQuery in queries
-          if newQuery.branchRe.source != 'master'
-            logger.warn "Branch will be ignored on exclude query"
-          rmQuery = null
-          for newUrl in newQuery.urls
-            for oldQuery in @queries
-              if newUrl in oldQuery.urls
-                rmQuery = oldQuery
-                break
-            if rmQuery
-              idx = @queries.indexOf rmQuery
-              @queries.splice(idx, 1)
-        done()
-    ), callback
-
-  do_run: (callback) ->
-    if @queries.length == 0
+  do_run: (queries, callback) ->
+    if queries.length == 0
       logger.warn 'No matches found.'
       return callback null
 
@@ -108,7 +57,7 @@ class exports.Engine
       return callback err if err?
 
       logger.debug 'Starting to process repositories'
-      async.eachSeries @queries, ((query, done) =>
+      async.eachSeries queries, ((query, done) =>
         logger.info "Processing #{logger.highlight query.name}"
         git.prepareRepo query.name, query.urls, (err, repo) =>
           return done err if err?

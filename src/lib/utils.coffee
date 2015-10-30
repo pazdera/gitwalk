@@ -53,4 +53,8 @@ runCommand = (command, cwd, callback) ->
 
       callback()
 
-module.exports = {fileExists, expandVars, matchProc, runCommand}
+isArray = Array.isArray || ( value ) -> return {}.toString.call( value ) is '[object Array]'
+
+removeExtension = (f) -> f.replace /\.[^/.]+$/, ""
+
+module.exports = {fileExists, expandVars, matchProc, runCommand, isArray, removeExtension}

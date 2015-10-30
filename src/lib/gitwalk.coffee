@@ -2,6 +2,7 @@
 
 engine = require './engine'
 proc = require './processors'
+logger = require './logger'
 
 # Perform actions on groups of repositories.
 #
@@ -16,7 +17,12 @@ proc = require './processors'
 #                             been processed with no arguments or earlier if an
 #                             error occurs with the error as the first argument.
 module.exports = gitwalk = (expression, processor, callback) ->
-  eng = new engine.Engine(expression, processor)
-  eng.run callback
+  try
+    eng = new engine.Engine(expression, processor)
+    eng.run callback
+  catch err
+    logger.debug err.stack
+    logger.error err
+    callback()
 
 module.exports.proc = new -> @[name] = mod.generator for name, mod of proc; @

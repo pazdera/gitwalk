@@ -24,6 +24,7 @@ class exports.Url
 
     logger.debug "URL: #{@url}, branch #{@branch.source}"
 
+  # Returs a list of queries for the engine
   resolve: (callback) ->
     return callback null, [
         name: path.basename @url
