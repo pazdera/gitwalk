@@ -4,6 +4,7 @@ async = require 'async'
 glob = require 'glob'
 tilde = require 'expand-tilde'
 path = require 'path'
+minimatch = require 'minimatch'
 
 utils = require '../utils'
 logger = require '../logger'
@@ -17,12 +18,12 @@ class exports.Glob
       firstPart = parts.join ':'
     else
       firstPart = expression
-      secondPart = null
+      secondPart = 'master'
+
+    logger.debug "Glob: #{firstPart}, branch #{secondPart}"
 
     @pathPattern = firstPart + '/.git/'
-    @branch = if secondPart then new RegExp secondPart else /master/
-
-    logger.debug "Glob: #{@pathPattern}, branch #{@branch.source}"
+    @branch = minimatch.makeRe secondPart
 
   resolve: (callback) ->
     pattern = tilde @pathPattern
