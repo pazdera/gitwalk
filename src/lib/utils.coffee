@@ -43,8 +43,16 @@ runCommand = (command, cwd, callback) ->
 
     logger.debug "Running '#{command}'"
     proc = child_process.spawn '/bin/sh', ['-c', command],
-      stdio: 'inherit'
       cwd: cwd
+      #stdio: 'inherit'
+
+    proc.stdout.on 'data', (data) ->
+      for line in data.toString('utf8').split '\n'
+        logger.info line, getCommandName command if line.length > 0
+
+    proc.stderr.on 'data', (data) ->
+      for line in data.toString('utf8').split '\n'
+        logger.error line, getCommandName command if line.length > 0
 
     proc.on 'error', callback
     proc.on 'close', (code) ->
@@ -57,4 +65,16 @@ isArray = Array.isArray || ( value ) -> return {}.toString.call( value ) is '[ob
 
 removeExtension = (f) -> f.replace /\.[^/.]+$/, ""
 
-module.exports = {fileExists, expandVars, matchProc, runCommand, isArray, removeExtension}
+getCommandName = (command) ->
+  tokens = command.split /\s+/
+  for token in tokens
+    if '=' in token
+      continue
+    else
+      return token
+
+  return tokens[0]
+
+
+module.exports = {fileExists, expandVars, matchProc, runCommand, isArray,
+                  removeExtension, getCommandName}
