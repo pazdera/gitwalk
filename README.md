@@ -22,12 +22,22 @@ lifting in the background is done by [nodegit](http://www.nodegit.org/) and
 * Authenticated pushes via ssh and http
 * Lets you define groups of repositories
 * Built-in search tool
-* Easily extensible with new [expressions](https://github.com/pazdera/gitwalk#expressions)
-  and [processors](https://github.com/pazdera/gitwalk#processors)
+* Easily extensible with new [expressions](#expressions)
+  and [processors](#processors)
 * Usable from the CLI as well as JavaScript
 
 ---
-TOC
+
+[Installation](#installation)
+[Usage](#usage)
+[Expressions](#expressions)
+[Processors](#processors)
+[Configuration](#configuration)
+[JavaScript API](#javascript-api)
+[Contributing](#contributing)
+[Credits](#credits)
+[Licence](#licence)
+
 ---
 
 ## Installation
@@ -85,7 +95,7 @@ Check out the detailed description of each resolver below for more information.
 Under the hood, each type of expression is handled by a **resolver**. What
 follows is a description of those that come with gitwalk by default. However,
 it's really easy to add new ones. See the [contribution
-guidelines](https://github.com/pazdera/gitwalk#contributing).
+guidelines](#contributing).
 
 ### GitHub
 
@@ -184,8 +194,7 @@ group:<name>
 #### Configuring groups
 
 Groups of expressions can be defined in the
-[configuration file](https://github.com/pazdera/gitwalk#configuration) like
-this:
+[configuration file](#configuration) like this:
 
 ```json
 {
