@@ -82,11 +82,14 @@ initCache = (callback) ->
 
 # Removes the whole cache directory and recreates it from scratch.
 #
-# @param cacheRoot [String] The path to the cache.
 # @param callback [(err)] A function to receive the error (if any).
 #
 clearCache = (cacheRoot, callback) ->
-  log.debug 'Clearing cache'
+  unless callback?
+    callback = cacheRoot
+    cacheRoot = tilde config.get 'cache:root'
+
+  log.debug "Clearing #{cacheRoot}"
   rimraf cacheRoot, (err) ->
     return callback "Failed to clear the cache (#{err})" if err?
 
@@ -95,6 +98,4 @@ clearCache = (cacheRoot, callback) ->
       callback err
 
 
-module.exports =
-  getCacheDir: getCacheDir
-  initCache: initCache
+module.exports = {getCacheDir, initCache, clearCache}
