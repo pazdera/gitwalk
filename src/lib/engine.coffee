@@ -1,29 +1,5 @@
 # Resolver of the repository selectors
 
-# library interface:
-#
-#   gitwalk 'github:user/repo@branch', gitwalk.proc.files '.*'
-#     ((file_path, done) ->
-#     ),
-#     ((err) ->
-#     )
-#
-#   gitwalk 'github:user/repo@branch', (gitwalk.proc.shell 'ls -l .',
-#       (err) ->
-#     )
-#
-#   gitwalk 'github:user/repo@branch', (err, repo, calback) ->
-#     ((err) ->
-#     )
-#
-
-# terminal ui:
-#
-#  gitwalk 'github:user/repo@branch' files '.*' 'grep exp #{file}'
-#  gitwalk 'github:user/repo@branch' commits '.*' 'echo #{msg} #{author} #{sha}'
-#  gitwalk 'github:user/repo@branch' shell 'ls -l #{repo}'
-#
-
 fs = require 'fs'
 path = require 'path'
 nodegit = require 'nodegit'
