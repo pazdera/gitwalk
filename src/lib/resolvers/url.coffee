@@ -2,8 +2,8 @@
 
 async = require 'async'
 glob = require 'glob'
-tilde = require 'expand-tilde'
 path = require 'path'
+minimatch = require 'minimatch'
 
 utils = require '../utils'
 logger = require '../logger'
@@ -13,14 +13,14 @@ class exports.Url
     parts = expression.split ':'
 
     if parts.length < 3
-      secondPart = null
+      secondPart = 'master'
       firstPart = expression
     else
       secondPart = parts.pop()
       firstPart = parts.join ':'
 
     @url = firstPart
-    @branch = if secondPart then new RegExp secondPart else /master/
+    @branch = minimatch.makeRe secondPart
 
     logger.debug "URL: #{@url}, branch #{@branch.source}"
 
