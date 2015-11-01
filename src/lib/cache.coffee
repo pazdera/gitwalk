@@ -36,7 +36,7 @@ getCacheDir = (repoName, repoUrl, callback) ->
   # Make the name unique by appending the hash of the URL at the end
   dirName = "#{repoName}-#{getSHA1 repoUrl}"
 
-  du cacheRoot, (err, size) ->
+  #du cacheRoot, (err, size) ->
   cacheDirPath = path.normalize path.join cacheRoot, dirName
   callback cacheDirPath
 
