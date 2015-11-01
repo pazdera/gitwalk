@@ -26,6 +26,10 @@ lifting in the background is done by [nodegit](http://www.nodegit.org/) and
   and [processors](https://github.com/pazdera/gitwalk#processors)
 * Usable from the CLI as well as JavaScript
 
+---
+TOC
+---
+
 ## Installation
 
 Gitwalk is distributed as an [npm](https://www.npmjs.com/package/gitwalk) package.
@@ -175,7 +179,7 @@ later on. There are no predefined groups.
 group:<name>
 ```
 
-* **name**: Name of a group.
+* **name**: Name of the group.
 
 #### Configuring groups
 
@@ -208,13 +212,86 @@ this:
 
 ## Processors
 
+Processors are tasks that you can run on each of the repositories that were
+matched by your expressions. Just as with expressions, it's really easy to
+add your own. Here are the ones that ship with gitwalk by default:
+
+```bash
+# Search for unfinished work in all JavaScript files
+$ gitwalk ... grep '(TODO|FIXME)' '**/*.js'
+
+# List all files in the repository
+$ gitwalk ... command 'tree .'
+
+# Another way to search the files
+$ gitwalk ... command 'git grep "(TODO|FIXME)"'
+
+# Replace the year in all Ruby files
+$ gitwalk ... files '**/*.rb' 'sed -i s/2015/2016/g #{file}'
+
+# Simple commit message profanity detector
+$ gitwalk ... commits 'grep "(f.ck|sh.t|b.llocks)" <<<"#{message}"'
+```
+
+The `#{hashCurlyBraces}` templates will be expanded into values before the
+command is executed. Each command exports different set of variables; check
+out the detailed descriptions below to find out more.
+
 ### grep
+
+Line-by-line search through all the files in the working directory using
+regular expressions, similar to [grep](https://en.wikipedia.org/wiki/Grep).
+
+```bash
+$ gitwalk ... grep <pattern> [<files>]
+```
+
+* **regexp**: The pattern to look for.
+* _(optional)_ **files**: Limit the search to certain files only (glob
+expressions allowed). Searches all files by default.
 
 ### files
 
+Run a custom command for each file in the repository. The `path` parameter
+lets you match only certain files.
+
+```bash
+$ gitwalk ... files <path> <command>
+```
+
+* **path**: Path filter (glob expressions allowed).
+* **command**: A command to run for each file
+  * **Expored vars**
+    * #{file}
+
 ### commits
 
+Run a command for each
+
+```bash
+$ gitwalk ... commits <command>
+```
+
+* **command**: A command to run for each commit.
+  * **Expored vars**
+    * #{sha}
+    * #{summary}
+    * #{message}
+    * #{author}
+    * #{committer}
+
 ### command
+
+Run a command per repository. This is useful for running custom scripts. The
+current working directory for the command is set to the working tree of
+gitwalk's local clone. You should be able to use the `git` command as usual.
+
+```bash
+$ gitwalk ... command <command>
+```
+
+* **command**: A command to run for each repository.
+
 
 ## Configuration
 
@@ -248,7 +325,7 @@ might look like:
   "logger": {
     "level": "debug"
   }
-}%
+}
 ```
 
 ## Javascript API
@@ -267,7 +344,7 @@ gitwalk('github:pazdera/\*', gitwalk.proc.grep(/TODO/, '*.js'), function (err) {
 
 ## Credits
 
-Radek Pazdera &lt;me@radek.io&gt;
+Radek Pazdera &lt;me@radek.io&gt; [http://radek.io](http://radek.io)
 
 ## Licence
 
