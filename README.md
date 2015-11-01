@@ -351,6 +351,17 @@ gitwalk('github:pazdera/\*', gitwalk.proc.grep(/TODO/, '*.js'), function (err) {
 
 ## Contributing
 
+If you found a bug, please [open a new issue](https://github.com/pazdera/gitwalk/issues)
+with as much relevant information as possible. And in case you'd like to jump
+in and get your hands dirty, here are a few ideas to get you started:
+
+* Add new resolvers (BitBucket and other services)
+* Add new processors (profanity search, integration with linters)
+* The tests are atrocious (please help me write them!)
+
+If you start working on something, feel free to create an issue or drop me
+a line to make sure you're not working on the same thing as somebody else.
+
 ## Credits
 
 Radek Pazdera &lt;me@radek.io&gt; [http://radek.io](http://radek.io)
