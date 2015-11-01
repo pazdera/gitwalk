@@ -17,11 +17,13 @@ class exports.GitHub
   constructor: (expression) ->
     match = @parseExpression expression
 
-    @user = match[1]
-    @repoRe = new RegExp match[2] #minimatch.makeRe match[2]
-    @branchRe = if match[4] then new RegExp match[4] else /master/ # minimatch.makeRe
+    logger.debug "GitHub: #{match[1]}/#{match[2]}, branch #{match[4]}"
 
-    logger.debug "GitHub: #{@user}/#{match[2]}, branch #{@branchRe.source}"
+    @user = match[1]
+    @repoRe = minimatch.makeRe match[2]
+
+    match[4] ?= 'master'
+    @branchRe = minimatch.makeRe match[4]
 
     @repos = []
 
