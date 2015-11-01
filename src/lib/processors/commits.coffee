@@ -24,6 +24,7 @@ module.exports.generator = commits = (callback) ->
       .then (commits) ->
         p = new Promise (resolve, reject) ->
           async.eachSeries commits, ((commit, done) ->
+            logger.debug "On commit #{logger.highlight commit.sha().substr(0,7)}"
             callback(commit, done)
           ),
           ((err) ->
