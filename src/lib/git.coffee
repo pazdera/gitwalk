@@ -4,6 +4,7 @@ nodegit = require 'nodegit'
 path = require 'path'
 async = require 'async'
 minimatch = require 'minimatch'
+spinner = require 'char-spinner'
 
 config = require './config'
 cache = require './cache'
@@ -54,10 +55,12 @@ class CloneError extends Error then constructor: -> super
 
 cloneRepo = (repoUrl, targetDir, callback) ->
   logger.info "Cloning from #{repoUrl}"
+  interval = spinner()
   opts = getOpts()
   nodegit.Clone.clone repoUrl, targetDir, opts
     .then (repo) ->
       logger.debug 'Cloned successfully'
+      clearInterval interval
       callback null, repo
     .catch (err) ->
       logger.error "Operation failed (#{err})"
@@ -91,8 +94,10 @@ getRepoHandle = (repoUrl, dir, callback) ->
 # Fetch and return a list of all references in the repo
 getUpToDateRefs = (repo, callback) ->
   logger.debug "Fetching updates"
+  interval = spinner()
   repo.fetchAll getOpts().fetchOpts
     .then ->
+      clearInterval interval
       logger.debug "Fetched successfully"
       return repo.getReferences(nodegit.Reference.TYPE.LISTALL)
     .then (reflist) ->
