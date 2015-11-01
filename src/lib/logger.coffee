@@ -17,7 +17,19 @@ logMsg = (level, label, msg) ->
   if not logLevel or logLevel >= level
     console.log "#{chalk.blue 'gitwalk'} #{label}: #{msg}"
 
-exports.highlight = (string) ->
+exports.set = (opts) ->
+  if opts.colours?
+    switch opts.colours
+      when 'always' then chalk.enabled = true
+      when 'off' then chalk.enabled = false
+      when 'auto' then chalk.enabled = chalk.supportsColor
+      else
+        warn "Colour setting #{highlight opts.colours} not recognised"
+
+  if opts.level?
+    logLevel = LEVELS[opts.level]
+
+exports.highlight = highlight = (string) ->
   chalk.yellow string
 
 exports.info = (msg) ->
