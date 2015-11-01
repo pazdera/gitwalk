@@ -58,7 +58,7 @@ class exports.Engine
 
       logger.debug 'Starting to process repositories'
       async.eachSeries queries, ((query, done) =>
-        logger.info "Processing #{logger.highlight query.name}"
+        logger.info "Repository #{logger.highlight query.name}"
         git.prepareRepo query.name, query.urls, (err, repo) =>
           return done err if err?
           @updateRepo repo, query, (err, branches) =>
