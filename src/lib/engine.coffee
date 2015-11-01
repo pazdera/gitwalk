@@ -28,6 +28,7 @@ fs = require 'fs'
 path = require 'path'
 nodegit = require 'nodegit'
 async = require 'async'
+spinner = require 'char-spinner'
 
 logger = require './logger'
 cache = require './cache'
@@ -43,16 +44,29 @@ class exports.Engine
     @expressions = new ExpressionSet expressions, getResolver
 
   run: (callback) ->
-    logger.info 'Evaluating expressions'
+    msg = 'Evaluating expression'
+    msg += 's' if @expressions.length > 1
+    logger.info msg
+    interval = spinner()
+
     @expressions.getQueries (err, queries) =>
       return callback err if err?
-      @do_run queries, callback
+
+      if queries.length == 0
+        logger.warn 'No matches found.'
+        return callback null
+
+      clearInterval interval
+      # Dry run
+      unless @processor?
+        logger.info "Matched #{queries.length} repositories:"
+        for query in queries
+          logger.info "  #{logger.highlight query.name}: #{query.urls[0]}"
+        callback null
+      else
+        @do_run queries, callback
 
   do_run: (queries, callback) ->
-    if queries.length == 0
-      logger.warn 'No matches found.'
-      return callback null
-
     cache.initCache (err) =>
       return callback err if err?
 
