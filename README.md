@@ -78,7 +78,7 @@ $ gitwalk 'github:pazdera/tco:*' grep TODO
 
 $ gitwalk 'github:pazdera/scriptster' command 'tree .'
 
-$ gitwalk 'github:pazdera/*' commits 'echo "#{sha}: #{summary}"'
+$ gitwalk 'github:pazdera/@(catpix|word_wrap)' commits 'echo "#{sha}: #{summary}"'
 ```
 
 ## Expressions
