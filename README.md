@@ -1,4 +1,4 @@
-# gitwalk: Bulk processing of git repositories
+# gitwalk: Bulk processing of git repos
 
 
 ## Features
