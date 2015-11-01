@@ -28,15 +28,15 @@ lifting in the background is done by [nodegit](http://www.nodegit.org/) and
 
 ---
 
-[Installation](#installation)
-[Usage](#usage)
-[Expressions](#expressions)
-[Processors](#processors)
-[Configuration](#configuration)
-[JavaScript API](#javascript-api)
-[Contributing](#contributing)
-[Credits](#credits)
-[Licence](#licence)
+* [Installation](#installation)
+* [Usage](#usage)
+* [Expressions](#expressions)
+* [Processors](#processors)
+* [Configuration](#configuration)
+* [JavaScript API](#javascript-api)
+* [Contributing](#contributing)
+* [Credits](#credits)
+* [Licence](#licence)
 
 ---
 
