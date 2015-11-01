@@ -44,6 +44,7 @@
     "async": "^1.0.0",
     "bluebird": "^3.0.2",
     "chalk": "^1.0.0",
+    "char-spinner": "^1.0.1",
     "commander": "^2.8.1",
     "cson": "^3.0.2",
     "du": "^0.1.0",
