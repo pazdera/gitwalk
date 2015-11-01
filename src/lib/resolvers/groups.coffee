@@ -28,6 +28,8 @@ class exports.Group
   # Returs a list of queries for the engine
   resolve: (callback) ->
     expressions = config.get "resolvers:groups:#{@name}"
+    unless expressions?
+      throw new Error "Group '#{@name}' not found"
     unless utils.isArray expressions
       throw new Error "Group '#{@name}' must be an array of expressions"
 
