@@ -49,17 +49,36 @@ Use the following command to install it on your system:
 $ npm install -g gitwalk
 ```
 
-Make sure to include `-g` in case want to get the CLI command in your `$PATH`.
+Make sure to include `-g` to get the CLI command in your `$PATH`.
 
 ## Usage
 
+The interface is pretty straight-forward. Here's the synopsis:
 
 ```
-gitwalk [options] <expr...> <proc> <cmd...>
+gitwalk [options] <expr...> <proc> <proc-args>
 ```
+
+The first positional arguments are **expressions** that determine which
+repositories will be processed. You can pass one or more of them at the same
+time. The next one is your preferred **processor** which specifies what will
+happen with the repositories, followed by any arguments that it takes &mdash;
+usually a command, but different processors support different ones.
+
+Check out the [expressions](#expressions) and [processors](#processors)
+sections below for the details.
+
+### Examples
+
+Here are a few quick examples that should work out of the box. Paste them
+in your terminal and see what happens.
 
 ```bash
-$ gitwalk 'github:pazdera/tco' grep TODO
+$ gitwalk 'github:pazdera/tco:*' grep TODO
+
+$ gitwalk 'github:pazdera/scriptster' command 'tree .'
+
+$ gitwalk 'github:pazdera/*' commits 'echo "#{sha}: #{summary}"'
 ```
 
 ## Expressions
@@ -337,7 +356,9 @@ might look like:
 }
 ```
 
-## Javascript API
+## JavaScript API
+
+The JS API is similar to the CLI interface:
 
 ```js
 var gitwalk = require('gitwalk');
@@ -358,6 +379,7 @@ in and get your hands dirty, here are a few ideas to get you started:
 * Add new resolvers (BitBucket and other services)
 * Add new processors (profanity search, integration with linters)
 * The tests are atrocious (please help me write them!)
+* Finish writing the API docs
 
 If you start working on something, feel free to create an issue or drop me
 a line to make sure you're not working on the same thing as somebody else.
