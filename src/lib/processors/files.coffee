@@ -1,30 +1,22 @@
 # iterates through files in the repository
 
-recursive = require 'recursive-readdir'
+glob = require 'glob'
 async = require 'async'
+path = require 'path'
 
 logger = require '../logger'
 utils = require '../utils'
 
 # The callback is called for every file with the following signature
 #     (filePath, callback) ->
-module.exports.generator = files = (pathRe, callback) ->
+module.exports.generator = files = (pathPattern, callback) ->
   return (repo, finished) ->
     repoLoc = repo.workdir()
-    recursive repoLoc, ["#{repoLoc}/.git/**"], (err, files) ->
+    opts = {ignore: ".git/**/*", cwd: repoLoc, matchBase: true, nodir: true}
+    glob pathPattern, opts, (err, files) ->
       async.eachSeries files, ((filePath, done) ->
-        relativePath = filePath.replace repoLoc, ''
-
-        # Remove the leading '/' if present
-        if relativePath.substring(0, 1) == '/'
-          relativePath = relativePath.substring 1
-
-        re = new RegExp pathRe
-        if re.test relativePath
-          logger.info "On file #{logger.highlight relativePath}"
-          callback filePath, done
-        else
-          done()
+        logger.debug "On file #{logger.highlight filePath}"
+        callback path.join(repoLoc, filePath), done
       ),
       ((err) ->
         finished err
