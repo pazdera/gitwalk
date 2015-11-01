@@ -14,8 +14,9 @@ LEVELS =
 logLevel = LEVELS[config.get 'logger:level']
 
 logMsg = (level, label, msg) ->
+  label = "#{label} " if label.length > 0
   if not logLevel or logLevel >= level
-    console.log "#{chalk.blue 'gitwalk'} #{label}: #{msg}"
+    console.log "#{chalk.blue 'gitwalk'} #{label}#{msg}"
 
 exports.set = (opts) ->
   if opts.colours?
@@ -32,14 +33,23 @@ exports.set = (opts) ->
 exports.highlight = highlight = (string) ->
   chalk.yellow string
 
-exports.info = (msg) ->
-  logMsg LEVELS.info, chalk.green('info'), msg
+exports.info = info = (msg, tag=null) ->
+  if tag?
+    tag = "#{tag}    ".substr(0, 4) if tag.length < 4
+    tag = chalk.cyan tag
+  else
+    tag = chalk.green 'info'
 
-exports.warn = (msg) ->
-  logMsg LEVELS.warn, chalk.black.bgYellow('warn'), msg
+  logMsg LEVELS.info, tag, msg
 
-exports.error = (msg) ->
-  logMsg LEVELS.error, chalk.black.bgRed('err!'), msg
+exports.warn = warn = (msg, tag=null) ->
+  tag ?= 'warn'
+  logMsg LEVELS.warn, chalk.black.bgYellow(tag), msg
 
-exports.debug = (msg) ->
-  logMsg LEVELS.debug, chalk.bgBlack('dbg?'), msg
+exports.error = error = (msg, tag=null) ->
+  tag ?= 'err!'
+  logMsg LEVELS.error, chalk.black.bgRed(tag), msg
+
+exports.debug = debug = (msg, tag=null) ->
+  tag ?= 'dbg?'
+  logMsg LEVELS.debug, chalk.bgBlack(tag), msg
