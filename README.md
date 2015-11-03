@@ -4,20 +4,19 @@
 a group of repos using an [expression](https://github.com/pazdera/gitwalk#expressions)
 and provide an [operation](https://github.com/pazdera/gitwalk#processors) to be
 completed. Gitwalk will download the repos, iterate through them and run the
-operation for each one. This may be searching through files or the commit
-history, editing and pushing the changes back upstream &mdash; whatever you can
+operation for each one. This may be searching through files and commits, running tests
+and linters, editing files and pushing the changes back upstream &mdash; whatever you can
 think of.
 
 ![gitwalk in the terminal](https://raw.githubusercontent.com/pazdera/gitwalk/master/screenshot.png)
 
-**gitwalk** is written in CoffeeScript and runs on Node.js. Most of the heavy
-lifting in the background is done by [nodegit](http://www.nodegit.org/) and
-[node-github](https://github.com/mikedeboer/node-github).
+**gitwalk** is made in CoffeeScript and runs on Node.js. [nodegit](http://www.nodegit.org/) and
+[node-github](https://github.com/mikedeboer/node-github) do most of the heavy lifting in the background.
 
 ## Features
 
 * Wildcard matching
-* Integrates with GitHub API
+* Integrates directly with GitHub API
 * Works with private repos via GitHub auth
 * Authenticated pushes via ssh and http
 * Lets you define groups of repositories
@@ -76,7 +75,8 @@ in your terminal and see what happens.
 ```bash
 $ gitwalk 'github:pazdera/tco:*' grep TODO
 
-$ gitwalk 'github:pazdera/scriptster' command 'tree .'
+$ git clone https://github.com/pazdera/scriptster.git
+$ gitwalk './scriptster' command 'tree .'
 
 $ gitwalk 'github:pazdera/@(catpix|word_wrap)' commits 'echo "#{sha}: #{summary}"'
 ```
