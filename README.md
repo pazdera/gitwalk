@@ -75,8 +75,7 @@ in your terminal and see what happens.
 ```bash
 $ gitwalk 'github:pazdera/tco:*' grep TODO
 
-$ git clone https://github.com/pazdera/scriptster.git
-$ gitwalk './scriptster' command 'tree .'
+$ gitwalk '**/*' command 'tree .'
 
 $ gitwalk 'github:pazdera/@(catpix|word_wrap)' commits 'echo "#{sha}: #{summary}"'
 ```
