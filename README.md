@@ -1,5 +1,8 @@
 # gitwalk: Bulk processing of git repos
 
+[![npm badge](https://img.shields.io/npm/v/gitwalk.svg)](https://www.npmjs.com/package/gitwalk) 
+[![npm downloads](https://img.shields.io/npm/dt/gitwalk.svg)](https://www.npmjs.com/package/gitwalk)
+
 **gitwalk** is a tool to manipulate multiple git repositories at once. You select
 a group of repos using an [expression](https://github.com/pazdera/gitwalk#expressions)
 and provide an [operation](https://github.com/pazdera/gitwalk#processors) to be
