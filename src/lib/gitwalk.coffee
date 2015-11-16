@@ -3,6 +3,7 @@
 engine = require './engine'
 proc = require './processors'
 logger = require './logger'
+git = require './git'
 
 # Processing groups of git repositories.
 #
@@ -26,3 +27,4 @@ module.exports = gitwalk = (expr, proc, callback) ->
     callback()
 
 module.exports.proc = new -> @[name] = mod.generator for name, mod of proc; @
+module.exports.authCallbacks = git.getCallbacks

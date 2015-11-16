@@ -11,39 +11,40 @@ cache = require './cache'
 utils = require './utils'
 logger = require './logger'
 
+getCallbacks = ->
+  # GitHub will fail cert check on some OSX machines.
+  # This overrides that check.
+  #
+  # TODO: Maybe this could check whether what platform are we on?
+  certificateCheck: ->
+    return 1
+
+  credentials: (url, userName) ->
+    creds = config.get 'git:auth'
+    for id, cred of creds
+      re = new RegExp cred['pattern']
+      if url.match re
+        switch
+          when 'username' of cred and 'password' of cred
+            logger.debug "Using plain auth (#{id})"
+            return nodegit.Cred.userpassPlaintextNew cred.username,
+                                                     cred.password
+          when 'public_key' of cred and 'private_key' of cred and \
+               'passphrase' of cred
+            logger.debug "Using SSH (#{id})"
+            return nodegit.Cred.sshKeyNew userName,
+                                          cred.public_key,
+                                          cred.private_key,
+                                          cred.passphrase
+          else
+            logger.warn "Misconfigured git auth for #{id}"
+
+    logger.debug "No auth method found for this URL"
+    return nodegit.Cred.defaultNew()
+
 getOpts = ->
   fetchOpts:
-    callbacks:
-      # GitHub will fail cert check on some OSX machines.
-      # This overrides that check.
-      #
-      # TODO: Maybe this could check whether what platform are we on?
-      certificateCheck: ->
-        return 1
-
-      credentials: (url, userName) ->
-        creds = config.get 'git:auth'
-        for id, cred of creds
-          re = new RegExp cred['pattern']
-          if url.match re
-            switch
-              when 'username' of cred and 'password' of cred
-                logger.debug "Using plain auth (#{id})"
-                return nodegit.Cred.userpassPlaintextNew cred.username,
-                                                         cred.password
-              when 'public_key' of cred and 'private_key' of cred and \
-                   'passphrase' of cred
-                logger.debug "Using SSH (#{id})"
-                return nodegit.Cred.sshKeyNew userName,
-                                              cred.public_key,
-                                              cred.private_key,
-                                              cred.passphrase
-              else
-                logger.warn "Misconfigured git auth for #{id}"
-
-        logger.debug "No auth method found for this URL"
-        return nodegit.Cred.defaultNew()
-
+    callbacks: getCallbacks()
 
 # Thrown by the engine when a clone fails
 #
@@ -185,3 +186,4 @@ module.exports =
   prepareRepo: prepareRepo
   forceUpdateLocalBranches: forceUpdateLocalBranches
   forceCheckoutBranch: forceCheckoutBranch
+  getCallbacks: getCallbacks
