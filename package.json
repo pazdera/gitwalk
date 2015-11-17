@@ -1,6 +1,6 @@
 {
   "name": "gitwalk",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Processing groups of git repositories.",
   "main": "./out/lib/gitwalk.js",
   "bin": {
