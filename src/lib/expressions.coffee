@@ -55,10 +55,10 @@ class exports.ExpressionSet
       res.resolve (err, queries) =>
         return done err if err?
         for newQuery in queries
-          if newQuery.branchRe.source != 'master'
-            logger.warn "Branches on exclude queries are ignored"
-          rmQuery = null
+          #if newQuery.branchRe.source != 'master'
+          #  logger.warn "Branches on exclude queries are ignored"
           for newUrl in newQuery.urls
+            rmQuery = null
             for oldQuery in @queries
               if newUrl in oldQuery.urls
                 rmQuery = oldQuery
