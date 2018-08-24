@@ -16,7 +16,7 @@ think of.
 **gitwalk** is made in CoffeeScript and runs on Node.js. [nodegit](http://www.nodegit.org/) and
 [node-github](https://github.com/mikedeboer/node-github) do most of the heavy lifting in the background.
 
-## Features
+## Features
 
 * Wildcard matching
 * Integrates directly with GitHub API
@@ -190,7 +190,7 @@ can never be too careful.
 
 ### URL
 
-URLs aren't a problem eiter. Gitwalk will make a local copy of the remote
+URLs aren't a problem either. Gitwalk will make a local copy of the remote
 repository and process it. However, you can't do any wildcard matching with
 URLs.
 
@@ -291,7 +291,7 @@ $ gitwalk ... files <path> <command>
 
 * **path**: Path filter (glob expressions allowed).
 * **command**: A command to run for each file
-  * **Expored vars**
+  * **Exported vars**
     * #{file}
 
 ### commits
