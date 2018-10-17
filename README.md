@@ -16,7 +16,7 @@ think of.
 **gitwalk** is made in CoffeeScript and runs on Node.js. [nodegit](http://www.nodegit.org/) and
 [node-github](https://github.com/mikedeboer/node-github) do most of the heavy lifting in the background.
 
-## Features
+## Features
 
 * Wildcard matching
 * Integrates directly with GitHub API
